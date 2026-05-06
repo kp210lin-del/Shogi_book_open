@@ -18,14 +18,14 @@ html,body{height:100%}
   --t-sente:#111;--t-gote:#991100;--t-promoted:#c82000;
   --t-sq-sel:#ffe066;--t-sq-last:#e0c888;
 }
-body[data-theme="wood"]{
-  --t-board:#2e1c06;--t-board-line:#c8922a;
-  --t-hand-bg:#120c04;--t-hand-border:#c8922a;
-  --t-piece-bg:#f0d870;--t-piece-border:#9a7220;
-  --t-piece-hi:#fffad2;--t-piece-mid:#e2c244;--t-piece-dark:#9c7012;
-  --t-sente:#0c0800;--t-gote:#640000;--t-promoted:#920000;
-  --t-sq-sel:rgba(255,204,50,.50);--t-sq-last:rgba(178,126,18,.40);
-  background:radial-gradient(ellipse 160% 70% at 50% -10%,#1e1208 0%,#070402 55%,#020202 100%);
+body[data-theme="choco"]{
+  --t-board:#4d4448;--t-board-line:rgba(255,255,255,0.09);
+  --t-hand-bg:#3b3336;--t-hand-border:#6d5b62;
+  --t-piece-bg:#66565c;--t-piece-border:#756269;
+  --t-piece-hi:#786470;--t-piece-mid:#66565c;--t-piece-dark:#55484d;
+  --t-sente:#f2e6e9;--t-gote:#9fbbb5;--t-promoted:#e59fb1;
+  --t-sq-sel:rgba(214,153,171,.38);--t-sq-last:rgba(142,192,176,.30);
+  background:#251e21;
 }
 body[data-theme="lacquer"]{
   --t-body-bg:#060606;
@@ -63,22 +63,27 @@ body[data-theme="moon"]{
   --t-sente:#020410;--t-gote:#300060;--t-promoted:#0820a8;
   --t-sq-sel:#a0beff;--t-sq-last:#7088e0;
 }
-/* ── Wood CG theme ── */
-body[data-theme="wood"] #board-grid{
-  background:
-    radial-gradient(ellipse 55% 45% at 20% 18%,rgba(255,240,140,.28) 0%,transparent 52%),
-    radial-gradient(ellipse 30% 24% at 80% 82%,rgba(220,168,52,.14) 0%,transparent 44%),
-    radial-gradient(ellipse 85% 50% at 50% 115%,rgba(50,16,0,.60) 0%,transparent 56%),
-    linear-gradient(136deg,#c4a03a 0%,#906622 26%,#6a4c12 55%,#48320c 100%);
-  background-size:100% 100%;
-  box-shadow:0 0 32px rgba(210,148,28,.28),inset 0 0 55px rgba(0,0,0,.32);
+/* ── Choco theme ── */
+body[data-theme="choco"] #board-grid{
+  background:#4d4448;
+  border-left:2px solid #6d5b62;border-right:2px solid #6d5b62;
+  box-shadow:0 8px 24px rgba(0,0,0,.38),inset 0 0 18px rgba(0,0,0,.24);
 }
-body[data-theme="wood"] .hand-row{
-  background:linear-gradient(162deg,#2a1a08 0%,#180e04 50%,#0c0804 100%);
+body[data-theme="choco"] .hand-row{background:#3b3336;}
+body[data-theme="choco"] .sq span{
+  clip-path:none;
+  border-radius:40% 40% 8% 8% / 50% 50% 10% 10%;
+  background:linear-gradient(135deg,#786470 0%,#66565c 50%,#55484d 100%);
+  filter:none;
+  box-shadow:0 3px 7px rgba(0,0,0,.42);
+  width:84%;height:88%;
 }
-body[data-theme="wood"] .sq:not(.selected):not(.last-move){background:transparent;}
-body[data-theme="wood"] .sq.selected{background:rgba(255,204,50,.50);}
-body[data-theme="wood"] .sq.last-move{background:rgba(178,126,18,.40);}
+body[data-theme="choco"] .hand-piece{
+  background:linear-gradient(135deg,#786470 0%,#66565c 50%,#55484d 100%);
+  border-color:#756269;
+  box-shadow:0 4px 8px rgba(0,0,0,.28);
+}
+body[data-theme="choco"] .hand-piece.selected{background:#735d64!important;box-shadow:0 0 0 2px #e59fb1;}
 body{
   font-family:"Hiragino Kaku Gothic Pro","Hiragino Sans","Yu Gothic",sans-serif;
   background:var(--t-body-bg);color:#e8e8e8;
@@ -290,7 +295,7 @@ body{
     </div>
     <select id="theme-select">
       <option value="default">🎨 クラシック</option>
-      <option value="wood">🌲 木</option>
+      <option value="choco">🍫 チョコ</option>
       <option value="lacquer">⬛ 漆（洗練）</option>
       <option value="water">💧 水</option>
       <option value="sakura">🌸 夜桜</option>
