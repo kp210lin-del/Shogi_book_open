@@ -330,7 +330,7 @@ function applyMove(fromUsi,toUsi,promote){
   grid[toR][toC]={sym:newSym};
   history.push({sfen:curSfen});
   curSfen=`${buildBoard(grid)} ${turn==="b"?"w":"b"} ${buildHand(hands)} ${move+1}`;
-  pickSrc=null;render();
+  pickSrc=null;playPlaceSound();render();
 }
 
 /* ── Tap handlers ───────────────────────── */
@@ -340,16 +340,16 @@ function onSq(usi){
   const[row,col]=rc(usi);const cell=grid[row][col];
 
   if(!pickSrc){
-    if(cell&&isMine(cell,turn)){pickSrc={from:usi};render();}
+    if(cell&&isMine(cell,turn)){pickSrc={from:usi};playPickSound();render();}
     return;
   }
   if(pickSrc.drop){
-    if(cell){pickSrc=null;if(isMine(cell,turn))pickSrc={from:usi};}
+    if(cell){pickSrc=null;if(isMine(cell,turn)){pickSrc={from:usi};playPickSound();}}
     else applyMove(null,usi,false);
     render();return;
   }
   if(pickSrc.from===usi){pickSrc=null;render();return;}
-  if(cell&&isMine(cell,turn)){pickSrc={from:usi};render();return;}
+  if(cell&&isMine(cell,turn)){pickSrc={from:usi};playPickSound();render();return;}
 
   const[fR,fC]=rc(pickSrc.from),fromCell=grid[fR][fC];
   if(!fromCell){pickSrc=null;render();return;}
@@ -370,7 +370,7 @@ function onSq(usi){
 function onHand(side,p){
   const{turn}=split(curSfen);
   if((side==="sente")!==(turn==="b"))return;
-  pickSrc={drop:side==="sente"?p:p.toLowerCase()};render();
+  pickSrc={drop:side==="sente"?p:p.toLowerCase()};playPickSound();render();
 }
 
 /* ── Audio ──────────────────────────────── */
@@ -381,13 +381,36 @@ function _getCtx(){
   return _audioCtx;
 }
 document.addEventListener('pointerdown',()=>{_getCtx();},{once:true,passive:true});
+function playPickSound(){
+  try{
+    const ctx=_getCtx();if(!ctx)return;
+    const o=ctx.createOscillator(),g=ctx.createGain();
+    o.type='sine';o.frequency.value=680;
+    g.gain.setValueAtTime(0.15,ctx.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+0.07);
+    o.connect(g);g.connect(ctx.destination);
+    o.start(ctx.currentTime);o.stop(ctx.currentTime+0.07);
+  }catch(e){}
+}
+function playPlaceSound(){
+  try{
+    const ctx=_getCtx();if(!ctx)return;
+    const o=ctx.createOscillator(),g=ctx.createGain();
+    o.type='sine';o.frequency.value=360;
+    g.gain.setValueAtTime(0.22,ctx.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+0.11);
+    o.connect(g);g.connect(ctx.destination);
+    o.start(ctx.currentTime);o.stop(ctx.currentTime+0.11);
+  }catch(e){}
+}
 function playPingPon(){
   try{
     const ctx=_getCtx();if(!ctx)return;
-    [[880,0,0.16],[660,0.22,0.16]].forEach(([freq,start,dur])=>{
+    /* C5→E5→G5→C6 の上昇ファンファーレ */
+    [[523,0,0.18,0.30],[659,0.13,0.18,0.30],[784,0.26,0.18,0.30],[1047,0.39,0.55,0.36]].forEach(([freq,start,dur,vol])=>{
       const o=ctx.createOscillator(),g=ctx.createGain();
       o.type='sine';o.frequency.value=freq;
-      g.gain.setValueAtTime(0.28,ctx.currentTime+start);
+      g.gain.setValueAtTime(vol,ctx.currentTime+start);
       g.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+start+dur);
       o.connect(g);g.connect(ctx.destination);
       o.start(ctx.currentTime+start);o.stop(ctx.currentTime+start+dur);
