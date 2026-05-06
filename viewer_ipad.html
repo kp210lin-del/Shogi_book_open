@@ -10,10 +10,56 @@ html,body{height:100%}
 :root{
   --rw:130px;
   --sq:min(64px,calc((100vw - var(--rw) - 22px) / 9));
+  --t-body-bg:#1a1a2e;
+  --t-board:#c8a55a;--t-board-line:#8a7040;
+  --t-hand-bg:#b8963c;--t-hand-border:#888;
+  --t-piece-bg:#d4aa70;--t-piece-border:#999;
+  --t-sente:#111;--t-gote:#991100;--t-promoted:#c82000;
+  --t-sq-sel:#ffe066;--t-sq-last:#e0c888;
+}
+body[data-theme="wood"]{
+  --t-body-bg:#0c0600;
+  --t-board:#dbb060;--t-board-line:#7a5218;
+  --t-hand-bg:#8c621a;--t-hand-border:#5a3c0c;
+  --t-piece-bg:#f5e4a8;--t-piece-border:#8c6820;
+  --t-sente:#100500;--t-gote:#640000;--t-promoted:#8c1400;
+  --t-sq-sel:#ffd54f;--t-sq-last:#c8a030;
+}
+body[data-theme="lacquer"]{
+  --t-body-bg:#060606;
+  --t-board:#c8a050;--t-board-line:#2e1e0a;
+  --t-hand-bg:#160e06;--t-hand-border:#2e1e0a;
+  --t-piece-bg:#f8edd5;--t-piece-border:#806840;
+  --t-sente:#080400;--t-gote:#6a0000;--t-promoted:#bb0000;
+  --t-sq-sel:#ffe082;--t-sq-last:#d4a030;
+}
+body[data-theme="water"]{
+  --t-body-bg:#020c18;
+  --t-board:#bcd6ea;--t-board-line:#4070a0;
+  --t-hand-bg:#142840;--t-hand-border:#2e6080;
+  --t-piece-bg:#e4f2fc;--t-piece-border:#4898c0;
+  --t-sente:#020e28;--t-gote:#500000;--t-promoted:#0030a0;
+  --t-sq-sel:#68bef8;--t-sq-last:#84b0d8;
+}
+body[data-theme="sakura"]{
+  --t-body-bg:#0a0412;
+  --t-board:#ead0d8;--t-board-line:#946070;
+  --t-hand-bg:#3a162c;--t-hand-border:#8a5868;
+  --t-piece-bg:#fce6f0;--t-piece-border:#ac6880;
+  --t-sente:#100018;--t-gote:#640018;--t-promoted:#b0003a;
+  --t-sq-sel:#ffaace;--t-sq-last:#e088aa;
+}
+body[data-theme="moon"]{
+  --t-body-bg:#02040e;
+  --t-board:#d4d8e8;--t-board-line:#3e50a0;
+  --t-hand-bg:#0a1030;--t-hand-border:#2c3c90;
+  --t-piece-bg:#eceef8;--t-piece-border:#4858b8;
+  --t-sente:#020410;--t-gote:#300060;--t-promoted:#0820a8;
+  --t-sq-sel:#a0beff;--t-sq-last:#7088e0;
 }
 body{
   font-family:"Hiragino Kaku Gothic Pro","Hiragino Sans","Yu Gothic",sans-serif;
-  background:#1a1a2e;color:#e8e8e8;
+  background:var(--t-body-bg);color:#e8e8e8;
   display:flex;flex-direction:column;height:100%;overflow:hidden;
 }
 
@@ -97,6 +143,11 @@ body{
   margin-top:auto;
 }
 #diagram-caption{font-size:11px;color:#99aacc;margin-bottom:3px}
+#theme-select{
+  width:100%;padding:6px 8px;border-radius:6px;
+  background:#141e32;border:1px solid #2a3a5a;color:#7090b0;
+  font-size:11px;cursor:pointer;flex-shrink:0;
+}
 
 /* ── board section ── */
 #board-section{
@@ -106,7 +157,7 @@ body{
 .hand-row{
   width:calc(9 * var(--sq) + 4px);display:flex;flex-direction:row;flex-wrap:wrap;
   gap:3px;padding:4px 6px;
-  background:#b8963c;border:2px solid #888;
+  background:var(--t-hand-bg);border:2px solid var(--t-hand-border);
   min-height:calc(var(--sq)*0.75);align-items:center;
 }
 .hand-row.top{border-bottom:none;border-radius:6px 6px 0 0}
@@ -114,15 +165,15 @@ body{
 .hand-empty{font-size:11px;color:#654;padding:2px 4px}
 .hand-piece{
   width:calc(var(--sq)*0.75);height:calc(var(--sq)*0.75);
-  background:#d4aa70;border:1px solid #999;
+  background:var(--t-piece-bg);border:1px solid var(--t-piece-border);
   display:flex;align-items:center;justify-content:center;
   font-family:"Hiragino Mincho Pro","Yu Mincho","HG明朝E",serif;
   font-size:calc(var(--sq)*0.42);font-weight:bold;
   position:relative;cursor:pointer;
   touch-action:manipulation;user-select:none;-webkit-user-select:none;
-  border-radius:2px;color:#111;
+  border-radius:2px;color:var(--t-sente);
 }
-.hand-piece.gote{transform:rotate(180deg);color:#991100}
+.hand-piece.gote{transform:rotate(180deg);color:var(--t-gote)}
 .hand-piece.selected{background:#ffe066!important;box-shadow:0 0 0 2px #ffa}
 .count{
   position:absolute;bottom:1px;right:2px;
@@ -133,26 +184,26 @@ body{
   display:grid;
   grid-template-columns:repeat(9,var(--sq));
   grid-template-rows:repeat(9,var(--sq));
-  border-left:2px solid #888;border-right:2px solid #888;
+  border-left:2px solid var(--t-board-line);border-right:2px solid var(--t-board-line);
   touch-action:manipulation;
 }
 .sq{
   width:var(--sq);height:var(--sq);
-  border:1px solid #8a7040;
+  border:1px solid var(--t-board-line);
   display:flex;align-items:center;justify-content:center;
-  background:#c8a55a;
+  background:var(--t-board);
   user-select:none;-webkit-user-select:none;
 }
-.sq.last-move{background:#e0c888}
-.sq.selected{background:#ffe066}
+.sq.last-move{background:var(--t-sq-last)}
+.sq.selected{background:var(--t-sq-sel)}
 .sq span{
   font-family:"Hiragino Mincho Pro","Yu Mincho","HG明朝E",serif;
-  font-size:calc(var(--sq)*0.55);font-weight:bold;line-height:1;color:#111;
+  font-size:calc(var(--sq)*0.55);font-weight:bold;line-height:1;color:var(--t-sente);
   pointer-events:none;
 }
-.sq span.gote{transform:rotate(180deg);color:#991100}
-.sq span.promoted{color:#c82000}
-.sq span.gote.promoted{color:#c82000}
+.sq span.gote{transform:rotate(180deg);color:var(--t-gote)}
+.sq span.promoted{color:var(--t-promoted)}
+.sq span.gote.promoted{color:var(--t-promoted)}
 #board-wrap{position:relative;display:inline-block}
 #arrow-svg{position:absolute;top:0;left:2px;pointer-events:none;overflow:visible}
 
@@ -204,6 +255,14 @@ body{
       <button class="ctrl-btn action-btn" id="prob-btn">問題図</button>
       <button class="ctrl-btn action-btn" id="undo-btn">1手戻す</button>
     </div>
+    <select id="theme-select">
+      <option value="default">🎨 クラシック</option>
+      <option value="wood">🌲 木</option>
+      <option value="lacquer">⬛ 漆（洗練）</option>
+      <option value="water">💧 水</option>
+      <option value="sakura">🌸 夜桜</option>
+      <option value="moon">🌙 月</option>
+    </select>
     <div class="info-box">
       <div id="diagram-caption"></div>
       <div id="situation-text"></div>
@@ -774,6 +833,21 @@ _bg.addEventListener('contextmenu',(e)=>e.preventDefault());
 })();
 
 window.addEventListener('resize',()=>render());
+
+/* ── Theme ──────────────────────────────── */
+(()=>{
+  const sel=document.getElementById("theme-select");
+  let saved="default";
+  try{saved=localStorage.getItem("shogiTheme")||"default";}catch(e){}
+  sel.value=saved;
+  document.body.dataset.theme=saved==="default"?"":saved;
+  sel.addEventListener("change",()=>{
+    const t=sel.value;
+    document.body.dataset.theme=t==="default"?"":t;
+    try{localStorage.setItem("shogiTheme",t);}catch(e){}
+    render();
+  });
+})();
 
 load(0);
 </script>
