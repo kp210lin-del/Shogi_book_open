@@ -407,6 +407,41 @@ function boardMatchesInitial(){
   return a.board===b.board&&a.hand===b.hand&&a.turn===b.turn;
 }
 
+function canReach(fSrc,rSrc,fDst,rDst,sym,turn,grid){
+  const df=fDst-fSrc,dr=rDst-rSrc;
+  const fwd=turn==='b'?-1:1;
+  const prom=sym.startsWith('+');
+  const base=(prom?sym[1]:sym).toUpperCase();
+  const pathClear=(f0,r0,f1,r1)=>{
+    const sf=f1>f0?1:f1<f0?-1:0,sr=r1>r0?1:r1<r0?-1:0;
+    let f=f0+sf,r=r0+sr;
+    while(f!==f1||r!==r1){if(grid[r-1][9-f])return false;f+=sf;r+=sr;}
+    return true;
+  };
+  if(!prom){
+    if(base==='P')return df===0&&dr===fwd;
+    if(base==='L')return df===0&&dr*fwd>0&&pathClear(fSrc,rSrc,fDst,rDst);
+    if(base==='N')return Math.abs(df)===1&&dr===fwd*2;
+    if(base==='S')return(dr===fwd&&Math.abs(df)<=1)||(dr===-fwd&&Math.abs(df)===1);
+    if(base==='G')return(Math.abs(df)+Math.abs(dr)===1)||(Math.abs(df)===1&&dr===fwd);
+    if(base==='K')return Math.abs(df)<=1&&Math.abs(dr)<=1&&!!(df||dr);
+    if(base==='B')return Math.abs(df)===Math.abs(dr)&&df!==0&&pathClear(fSrc,rSrc,fDst,rDst);
+    if(base==='R')return(df===0||dr===0)&&!!(df||dr)&&pathClear(fSrc,rSrc,fDst,rDst);
+  }else{
+    if(['P','L','N','S'].includes(base))
+      return(Math.abs(df)+Math.abs(dr)===1)||(Math.abs(df)===1&&dr===fwd);
+    if(base==='B'){
+      if(Math.abs(df)===Math.abs(dr)&&df!==0)return pathClear(fSrc,rSrc,fDst,rDst);
+      return Math.abs(df)<=1&&Math.abs(dr)<=1&&!!(df||dr);
+    }
+    if(base==='R'){
+      if((df===0||dr===0)&&!!(df||dr))return pathClear(fSrc,rSrc,fDst,rDst);
+      return Math.abs(df)<=1&&Math.abs(dr)<=1&&!!(df||dr);
+    }
+  }
+  return false;
+}
+
 function findMoveSource(mv,toFile,toRank,grid){
   const moveTurn=mv.includes('▲')?'b':'w';
   if(mv.includes('打'))return null;
@@ -425,19 +460,13 @@ function findMoveSource(mv,toFile,toRank,grid){
       const isGote=prom?sym[1]===sym[1].toLowerCase():sym===sym.toLowerCase();
       if(moveTurn==='b'&&isGote)continue;
       if(moveTurn==='w'&&!isGote)continue;
-      cands.push([9-c,r+1]);
+      const cf=9-c,cr=r+1;
+      if(canReach(cf,cr,toFile,toRank,sym,moveTurn,grid))
+        cands.push([cf,cr]);
     }
   }
   if(!cands.length)return null;
   if(cands.length===1)return cands[0];
-  if(baseSym==='P'&&!isProm){
-    const er=moveTurn==='b'?toRank+1:toRank-1;
-    const f=cands.find(([cf,cr])=>cf===toFile&&cr===er);
-    if(f)return f;
-  }
-  if(baseSym==='L'&&!isProm){
-    const f=cands.find(([cf])=>cf===toFile);if(f)return f;
-  }
   cands.sort(([f1,r1],[f2,r2])=>
     (Math.abs(f1-toFile)+Math.abs(r1-toRank))-(Math.abs(f2-toFile)+Math.abs(r2-toRank))
   );
