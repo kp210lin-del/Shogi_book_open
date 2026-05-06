@@ -472,11 +472,11 @@ function drawArrows(){
   const defs=document.createElementNS('http://www.w3.org/2000/svg','defs');
   for(const[lbl,col]of Object.entries(COLORS)){
     const mk=document.createElementNS('http://www.w3.org/2000/svg','marker');
-    mk.setAttribute('id','arrMk'+lbl);mk.setAttribute('markerWidth','10');
-    mk.setAttribute('markerHeight','7');mk.setAttribute('refX','9');
-    mk.setAttribute('refY','3.5');mk.setAttribute('orient','auto');
+    mk.setAttribute('id','arrMk'+lbl);mk.setAttribute('markerWidth','5');
+    mk.setAttribute('markerHeight','4');mk.setAttribute('refX','4');
+    mk.setAttribute('refY','2');mk.setAttribute('orient','auto');
     const poly=document.createElementNS('http://www.w3.org/2000/svg','polygon');
-    poly.setAttribute('points','0 0,10 3.5,0 7');poly.setAttribute('fill',col);
+    poly.setAttribute('points','0 0,5 2,0 4');poly.setAttribute('fill',col);
     mk.appendChild(poly);defs.appendChild(mk);
   }
   svg.appendChild(defs);
