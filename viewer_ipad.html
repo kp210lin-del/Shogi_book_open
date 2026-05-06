@@ -9,7 +9,7 @@
 html,body{height:100%}
 :root{
   --rw:130px;
-  --sq:min(58px,calc((100vw - var(--rw) - 22px) / 9));
+  --sq:min(64px,calc((100vw - var(--rw) - 22px) / 9));
 }
 body{
   font-family:"Hiragino Kaku Gothic Pro","Hiragino Sans","Yu Gothic",sans-serif;
@@ -65,10 +65,10 @@ body{
 }
 #reveal-btn:active{background:#3a4a70}
 #answer-area{
-  flex-shrink:0;
   background:#1e2a45;border-top:1px solid #2a3a5a;
-  padding:8px 12px;font-size:11px;line-height:1.6;
+  padding:8px 10px;font-size:11px;line-height:1.6;
   overflow-y:auto;max-height:130px;
+  width:calc(9 * var(--sq) + 4px);
 }
 .hidden{display:none!important}
 #correct-label{font-size:13px;font-weight:bold;color:#66ccff;margin-bottom:5px}
@@ -81,9 +81,13 @@ body{
 }
 #diagram-caption{font-size:10px;color:#99aacc;margin-bottom:2px}
 
-/* ── board section ── */
-#board-section{
+/* ── board column (board + answer directly below) ── */
+#board-col{
   flex:0 0 auto;align-self:flex-start;
+  display:flex;flex-direction:column;
+}
+#board-section{
+  flex:0 0 auto;
   display:flex;flex-direction:column;align-items:flex-start;
 }
 .hand-row{
@@ -165,13 +169,19 @@ body{
 <body>
 
 <div id="main">
-  <div id="board-section">
-    <div class="hand-row top" id="hand-gote"></div>
-    <div id="board-wrap">
-      <div id="board-grid"></div>
-      <svg id="arrow-svg" width="0" height="0"></svg>
+  <div id="board-col">
+    <div id="board-section">
+      <div class="hand-row top" id="hand-gote"></div>
+      <div id="board-wrap">
+        <div id="board-grid"></div>
+        <svg id="arrow-svg" width="0" height="0"></svg>
+      </div>
+      <div class="hand-row bot" id="hand-sente"></div>
     </div>
-    <div class="hand-row bot" id="hand-sente"></div>
+    <div id="answer-area" class="hidden">
+      <div id="correct-label"></div>
+      <div id="answer-text"></div>
+    </div>
   </div>
   <div id="right-panel">
     <div id="nav-row">
@@ -183,20 +193,15 @@ body{
     <div id="turn-ind"></div>
     <div id="choices"></div>
     <button id="reveal-btn">解答を表示</button>
-    <div class="info-box">
-      <div id="diagram-caption"></div>
-      <div id="situation-text"></div>
-    </div>
     <div id="action-row">
       <button class="ctrl-btn action-btn" id="prob-btn">問題図</button>
       <button class="ctrl-btn action-btn" id="undo-btn">1手戻す</button>
     </div>
+    <div class="info-box">
+      <div id="diagram-caption"></div>
+      <div id="situation-text"></div>
+    </div>
   </div>
-</div>
-
-<div id="answer-area" class="hidden">
-  <div id="correct-label"></div>
-  <div id="answer-text"></div>
 </div>
 
 <div id="promo-modal">
