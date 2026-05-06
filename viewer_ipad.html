@@ -406,7 +406,9 @@ function parseMoveJpToUsi(mv){
   return{to:toU,from:frU};
 }
 function getSqSize(){
-  return parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--sq'));
+  const el=document.querySelector('.sq');
+  if(el){const w=el.getBoundingClientRect().width;if(w>0)return w;}
+  return Math.min(58,(window.innerWidth-20)/9);
 }
 function getSqCenter(usi){
   const[file,rank]=parseUsi(usi);const sq=getSqSize();
@@ -578,6 +580,24 @@ document.getElementById("reset-btn").addEventListener("pointerup",(e)=>{e.preven
 document.getElementById("prob-btn").addEventListener("pointerup",(e)=>{e.preventDefault();curSfen=initSfen;history=[];pickSrc=null;render();});
 document.getElementById("undo-btn").addEventListener("pointerup",(e)=>{e.preventDefault();if(history.length){curSfen=history.pop().sfen;pickSrc=null;render();}});
 document.getElementById("reveal-btn").addEventListener("pointerup",(e)=>{e.preventDefault();showAnswer();});
+
+/* ── Long-press on board (3s) → show answer ── */
+let _lpTimer=null,_lpX=0,_lpY=0;
+document.getElementById('board-wrap').addEventListener('pointerdown',(e)=>{
+  _lpX=e.clientX;_lpY=e.clientY;
+  _lpTimer=setTimeout(()=>{_lpTimer=null;showAnswer();},3000);
+});
+['pointerup','pointercancel'].forEach(ev=>{
+  document.getElementById('board-wrap').addEventListener(ev,()=>{
+    if(_lpTimer){clearTimeout(_lpTimer);_lpTimer=null;}
+  });
+});
+document.getElementById('board-wrap').addEventListener('pointermove',(e)=>{
+  if(_lpTimer&&(Math.abs(e.clientX-_lpX)+Math.abs(e.clientY-_lpY))>12){
+    clearTimeout(_lpTimer);_lpTimer=null;
+  }
+});
+document.getElementById('board-wrap').addEventListener('contextmenu',(e)=>e.preventDefault());
 
 load(0);
 </script>
