@@ -735,10 +735,13 @@ _bg.addEventListener('pointerdown',(e)=>{
   _lpFired=false;_lpX=e.clientX;_lpY=e.clientY;
   _lpTimer=setTimeout(()=>{
     _lpTimer=null;_lpFired=true;
-    pickSrc=null;
     const usi=usiFromPoint(_lpX,_lpY);
-    if(usi&&boardMatchesInitial()&&arrowTargets[usi]){onChoice(arrowTargets[usi]);}
-    else{showAnswer();}
+    /* 盤面変化前に正解ラベルを確定 */
+    const choiceLabel=usi&&boardMatchesInitial()&&arrowTargets[usi]?arrowTargets[usi]:null;
+    /* 駒が選択中なら先に移動 */
+    if(pickSrc&&usi){onSq(usi);}else{pickSrc=null;render();}
+    /* 正解/不正解判定を表示 */
+    if(choiceLabel){onChoice(choiceLabel);}else{showAnswer();}
   },800);
 });
 _bg.addEventListener('pointerup',(e)=>{
