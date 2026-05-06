@@ -45,7 +45,7 @@ body{
   padding:0 6px;gap:6px;
 }
 #left-panel{
-  flex:1;min-width:90px;max-width:200px;
+  flex:0 0 130px;
   display:flex;flex-direction:column;gap:8px;
   padding-top:2px;
 }
@@ -491,11 +491,11 @@ function drawArrows(){
       const src=findMoveSource(c.move,toFile,toRank,grid);
       if(src)fromUsi=`${src[0]}${String.fromCharCode(96+src[1])}`;
     }
-    /* destination highlight */
+    /* destination highlight — subtle */
     const hl=document.createElementNS('http://www.w3.org/2000/svg','rect');
     hl.setAttribute('x',to.x-sq*0.46);hl.setAttribute('y',to.y-sq*0.46);
     hl.setAttribute('width',sq*0.92);hl.setAttribute('height',sq*0.92);
-    hl.setAttribute('rx','3');hl.setAttribute('fill',col);hl.setAttribute('opacity','0.28');
+    hl.setAttribute('rx','3');hl.setAttribute('fill',col);hl.setAttribute('opacity','0.15');
     svg.appendChild(hl);
     /* arrow line from source */
     if(fromUsi){
@@ -507,18 +507,18 @@ function drawArrows(){
       const line=document.createElementNS('http://www.w3.org/2000/svg','line');
       line.setAttribute('x1',fr.x+nx*sq*0.1);line.setAttribute('y1',fr.y+ny*sq*0.1);
       line.setAttribute('x2',ex);line.setAttribute('y2',ey);
-      line.setAttribute('stroke',col);line.setAttribute('stroke-width','5');
-      line.setAttribute('stroke-linecap','round');line.setAttribute('opacity','0.9');
+      line.setAttribute('stroke',col);line.setAttribute('stroke-width','3');
+      line.setAttribute('stroke-linecap','round');line.setAttribute('opacity','0.88');
       line.setAttribute('marker-end',`url(#arrMk${c.label})`);
       svg.appendChild(line);
     }
-    /* label centered in destination */
+    /* label — top-left corner of destination square, small */
     const t=document.createElementNS('http://www.w3.org/2000/svg','text');
-    t.setAttribute('x',to.x);t.setAttribute('y',to.y+sq*0.13);
-    t.setAttribute('text-anchor','middle');
-    t.setAttribute('font-size',sq*0.38);t.setAttribute('font-weight','bold');
-    t.setAttribute('fill',col);t.setAttribute('stroke','rgba(0,0,0,0.7)');
-    t.setAttribute('stroke-width','2.5');t.setAttribute('paint-order','stroke');
+    t.setAttribute('x',to.x-sq*0.44);t.setAttribute('y',to.y-sq*0.26);
+    t.setAttribute('text-anchor','start');
+    t.setAttribute('font-size',sq*0.22);t.setAttribute('font-weight','bold');
+    t.setAttribute('fill',col);t.setAttribute('stroke','rgba(0,0,0,0.8)');
+    t.setAttribute('stroke-width','1.5');t.setAttribute('paint-order','stroke');
     t.textContent=c.label;svg.appendChild(t);
   }
 }
