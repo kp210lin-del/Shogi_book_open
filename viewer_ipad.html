@@ -344,7 +344,6 @@ function applyMove(fromUsi,toUsi,promote){
 
 /* ── Tap handlers ───────────────────────── */
 function onSq(usi){
-  if(boardMatchesInitial()&&arrowTargets[usi]){onChoice(arrowTargets[usi]);return;}
   const{board,turn}=split(curSfen);
   const grid=parseBoard(board);
   const[row,col]=rc(usi);const cell=grid[row][col];
@@ -467,10 +466,38 @@ function findMoveSource(mv,toFile,toRank,grid){
   }
   if(!cands.length)return null;
   if(cands.length===1)return cands[0];
+  /* disambiguation suffixes — 右/左 from mover's view */
+  if(mv.includes('右')){
+    cands.sort(([f1],[f2])=>moveTurn==='b'?f2-f1:f1-f2);return cands[0];
+  }
+  if(mv.includes('左')){
+    cands.sort(([f1],[f2])=>moveTurn==='b'?f1-f2:f2-f1);return cands[0];
+  }
+  if(mv.includes('上')){
+    cands.sort(([,r1],[,r2])=>moveTurn==='b'?r1-r2:r2-r1);return cands[0];
+  }
+  if(mv.includes('下')){
+    cands.sort(([,r1],[,r2])=>moveTurn==='b'?r2-r1:r1-r2);return cands[0];
+  }
+  if(mv.includes('直')){
+    const direct=cands.filter(([f])=>f===toFile);
+    if(direct.length)return direct[0];
+  }
   cands.sort(([f1,r1],[f2,r2])=>
     (Math.abs(f1-toFile)+Math.abs(r1-toRank))-(Math.abs(f2-toFile)+Math.abs(r2-toRank))
   );
   return cands[0];
+}
+
+function usiFromPoint(cx,cy){
+  const boardEl=document.getElementById('board-grid');
+  if(!boardEl)return null;
+  const br=boardEl.getBoundingClientRect(),sq=getSqSize();
+  const bx=cx-(br.left+2),by=cy-br.top;
+  if(bx<0||bx>=9*sq||by<0||by>=9*sq)return null;
+  const file=9-Math.floor(bx/sq),rank=Math.floor(by/sq)+1;
+  if(file<1||file>9||rank<1||rank>9)return null;
+  return`${file}${String.fromCharCode(96+rank)}`;
 }
 
 function drawArrows(){
@@ -505,7 +532,8 @@ function drawArrows(){
     const to=getSqCenter(parsed.to);
     /* find source */
     let fromUsi=parsed.from;
-    if(!fromUsi){
+    const isDrop=c.move.includes('打');
+    if(!fromUsi&&!isDrop){
       const src=findMoveSource(c.move,toFile,toRank,grid);
       if(src)fromUsi=`${src[0]}${String.fromCharCode(96+src[1])}`;
     }
@@ -515,20 +543,31 @@ function drawArrows(){
     hl.setAttribute('width',sq*0.92);hl.setAttribute('height',sq*0.92);
     hl.setAttribute('rx','3');hl.setAttribute('fill',col);hl.setAttribute('opacity','0.15');
     svg.appendChild(hl);
-    /* arrow line from source */
-    if(fromUsi){
-      const fr=getSqCenter(fromUsi);
-      const dx=to.x-fr.x,dy=to.y-fr.y;
-      const len=Math.sqrt(dx*dx+dy*dy)||1;
+    /* arrow line — from board piece or from hand (drop) */
+    const drawLine=(x1,y1,x2,y2)=>{
+      const dx=x2-x1,dy=y2-y1,len=Math.sqrt(dx*dx+dy*dy)||1;
       const nx=dx/len,ny=dy/len;
-      const ex=to.x-nx*sq*0.38,ey=to.y-ny*sq*0.38;
       const line=document.createElementNS('http://www.w3.org/2000/svg','line');
-      line.setAttribute('x1',fr.x+nx*sq*0.1);line.setAttribute('y1',fr.y+ny*sq*0.1);
-      line.setAttribute('x2',ex);line.setAttribute('y2',ey);
+      line.setAttribute('x1',x1+nx*sq*0.1);line.setAttribute('y1',y1+ny*sq*0.1);
+      line.setAttribute('x2',x2-nx*sq*0.38);line.setAttribute('y2',y2-ny*sq*0.38);
       line.setAttribute('stroke',col);line.setAttribute('stroke-width','3');
       line.setAttribute('stroke-linecap','round');line.setAttribute('opacity','0.88');
       line.setAttribute('marker-end',`url(#arrMk${c.label})`);
       svg.appendChild(line);
+    };
+    if(fromUsi){
+      const fr=getSqCenter(fromUsi);
+      drawLine(fr.x,fr.y,to.x,to.y);
+    }else if(isDrop){
+      const moveTurn=c.move.includes('▲')?'b':'w';
+      const handEl=document.getElementById(moveTurn==='b'?'hand-sente':'hand-gote');
+      const boardEl=document.getElementById('board-grid');
+      if(handEl&&boardEl){
+        const br=boardEl.getBoundingClientRect(),hr=handEl.getBoundingClientRect();
+        const hx=hr.left+hr.width/2-(br.left+2);
+        const hy=hr.top+hr.height/2-br.top;
+        drawLine(hx,hy,to.x,to.y);
+      }
     }
     /* label — top-left corner of destination square, small */
     const t=document.createElementNS('http://www.w3.org/2000/svg','text');
@@ -655,7 +694,10 @@ document.getElementById('board-wrap').addEventListener('pointerdown',(e)=>{
   _lpFired=false;_lpX=e.clientX;_lpY=e.clientY;
   _lpTimer=setTimeout(()=>{
     _lpTimer=null;_lpFired=true;
-    pickSrc=null;showAnswer();
+    pickSrc=null;
+    const usi=usiFromPoint(_lpX,_lpY);
+    if(usi&&boardMatchesInitial()&&arrowTargets[usi]){onChoice(arrowTargets[usi]);}
+    else{showAnswer();}
   },2000);
 });
 /* capture phase — runs before .sq handlers; blocks sq tap after long-press */
