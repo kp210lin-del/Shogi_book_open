@@ -95,6 +95,10 @@ body{
 .sq span.promoted{color:#c82000}
 .sq span.gote.promoted{color:#c82000}
 
+/* ── board wrap + arrow overlay ── */
+#board-wrap{position:relative;display:inline-block}
+#arrow-svg{position:absolute;top:0;left:2px;pointer-events:none;overflow:visible}
+
 /* ── control row ── */
 #ctrl-row{
   display:flex;align-items:center;gap:8px;
@@ -172,12 +176,16 @@ body{
 <div id="main">
   <div id="board-section">
     <div class="hand-row top" id="hand-gote"></div>
-    <div id="board-grid"></div>
+    <div id="board-wrap">
+      <div id="board-grid"></div>
+      <svg id="arrow-svg" width="0" height="0"></svg>
+    </div>
     <div class="hand-row bot" id="hand-sente"></div>
   </div>
 
   <div id="ctrl-row">
     <span id="turn-ind"></span>
+    <button class="ctrl-btn" id="prob-btn">問題図</button>
     <button class="ctrl-btn" id="undo-btn">◀ 1手戻す</button>
   </div>
 
@@ -211,6 +219,7 @@ const KANJI = {
   "+R":"龍","+B":"馬","+S":"全","+N":"圭","+L":"杏","+P":"と",
 };
 const HAND_ORDER = ["R","B","G","S","N","L","P"];
+const JP_RANK={'一':1,'二':2,'三':3,'四':4,'五':5,'六':6,'七':7,'八':8,'九':9};
 
 let cur=0, initSfen="", curSfen="";
 let history=[], pickSrc=null, pendingMove=null;
@@ -355,6 +364,82 @@ function onHand(side,p){
   pickSrc={drop:side==="sente"?p:p.toLowerCase()};render();
 }
 
+/* ── Arrow helpers ──────────────────────── */
+function parseMoveJpToUsi(mv){
+  const m=mv.match(/([1-9])([一二三四五六七八九])/);
+  if(!m)return null;
+  const file=+m[1],rank=JP_RANK[m[2]];
+  const toU=`${file}${String.fromCharCode(96+rank)}`;
+  const src=mv.match(/\(([1-9])([1-9])\)/);
+  const frU=src?`${+src[1]}${String.fromCharCode(96+ +src[2])}`:null;
+  return{to:toU,from:frU};
+}
+function getSqSize(){
+  return parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--sq'));
+}
+function getSqCenter(usi){
+  const[file,rank]=parseUsi(usi);const sq=getSqSize();
+  return{x:(9.5-file)*sq,y:(rank-0.5)*sq};
+}
+function boardMatchesInitial(){
+  const a=split(curSfen),b=split(initSfen);
+  return a.board===b.board&&a.hand===b.hand&&a.turn===b.turn;
+}
+function drawArrows(){
+  const svg=document.getElementById('arrow-svg');
+  svg.innerHTML='';
+  if(!boardMatchesInitial())return;
+  const p=PROBLEMS[cur];
+  if(!p.choices||!p.choices.length)return;
+  const sq=getSqSize();
+  svg.setAttribute('width',9*sq);svg.setAttribute('height',9*sq);
+  const COLORS={A:'#1a4acc',B:'#30b8e0'};
+  const defs=document.createElementNS('http://www.w3.org/2000/svg','defs');
+  for(const[lbl,col] of Object.entries(COLORS)){
+    const mk=document.createElementNS('http://www.w3.org/2000/svg','marker');
+    mk.setAttribute('id','arrMk'+lbl);mk.setAttribute('markerWidth','8');
+    mk.setAttribute('markerHeight','6');mk.setAttribute('refX','7');
+    mk.setAttribute('refY','3');mk.setAttribute('orient','auto');
+    const poly=document.createElementNS('http://www.w3.org/2000/svg','polygon');
+    poly.setAttribute('points','0 0,8 3,0 6');poly.setAttribute('fill',col);
+    mk.appendChild(poly);defs.appendChild(mk);
+  }
+  svg.appendChild(defs);
+  for(const c of p.choices){
+    const col=COLORS[c.label];if(!col)continue;
+    const parsed=parseMoveJpToUsi(c.move);if(!parsed)continue;
+    const to=getSqCenter(parsed.to);
+    if(parsed.from){
+      const fr=getSqCenter(parsed.from);
+      const dx=to.x-fr.x,dy=to.y-fr.y;
+      const len=Math.sqrt(dx*dx+dy*dy)||1;
+      const nx=dx/len,ny=dy/len;
+      const ex=to.x-nx*sq*0.35,ey=to.y-ny*sq*0.35;
+      const line=document.createElementNS('http://www.w3.org/2000/svg','line');
+      line.setAttribute('x1',fr.x);line.setAttribute('y1',fr.y);
+      line.setAttribute('x2',ex);line.setAttribute('y2',ey);
+      line.setAttribute('stroke',col);line.setAttribute('stroke-width','4');
+      line.setAttribute('opacity','0.85');
+      line.setAttribute('marker-end',`url(#arrMk${c.label})`);
+      svg.appendChild(line);
+    }else{
+      const r=document.createElementNS('http://www.w3.org/2000/svg','rect');
+      r.setAttribute('x',to.x-sq*0.42);r.setAttribute('y',to.y-sq*0.42);
+      r.setAttribute('width',sq*0.84);r.setAttribute('height',sq*0.84);
+      r.setAttribute('rx','4');r.setAttribute('fill','none');
+      r.setAttribute('stroke',col);r.setAttribute('stroke-width','3');
+      r.setAttribute('opacity','0.85');
+      svg.appendChild(r);
+    }
+    const t=document.createElementNS('http://www.w3.org/2000/svg','text');
+    t.setAttribute('x',to.x+sq*0.38);t.setAttribute('y',to.y-sq*0.28);
+    t.setAttribute('font-size',sq*0.3);t.setAttribute('font-weight','bold');
+    t.setAttribute('fill',col);t.setAttribute('stroke','#000a');
+    t.setAttribute('stroke-width','2');t.setAttribute('paint-order','stroke');
+    t.textContent=c.label;svg.appendChild(t);
+  }
+}
+
 /* ── Render ─────────────────────────────── */
 function render(){
   const{board,turn,hand}=split(curSfen);
@@ -386,6 +471,7 @@ function render(){
   const ti=document.getElementById("turn-ind");
   ti.textContent=turn==="b"?"▲ 先手番":"△ 後手番";
   ti.style.color=turn==="b"?"#e8e8e8":"#ff9966";
+  drawArrows();
 }
 
 function renderHand(elId,hand,side){
@@ -459,6 +545,7 @@ document.getElementById("promo-no").addEventListener("pointerup",(e)=>{
 document.getElementById("prev-btn").addEventListener("pointerup",(e)=>{e.preventDefault();if(cur>0)load(cur-1);});
 document.getElementById("next-btn").addEventListener("pointerup",(e)=>{e.preventDefault();if(cur<PROBLEMS.length-1)load(cur+1);});
 document.getElementById("reset-btn").addEventListener("pointerup",(e)=>{e.preventDefault();curSfen=initSfen;history=[];pickSrc=null;render();});
+document.getElementById("prob-btn").addEventListener("pointerup",(e)=>{e.preventDefault();curSfen=initSfen;history=[];pickSrc=null;render();});
 document.getElementById("undo-btn").addEventListener("pointerup",(e)=>{e.preventDefault();if(history.length){curSfen=history.pop().sfen;pickSrc=null;render();}});
 document.getElementById("reveal-btn").addEventListener("pointerup",(e)=>{e.preventDefault();showAnswer();});
 
