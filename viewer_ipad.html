@@ -17,17 +17,16 @@ body{
   display:flex;flex-direction:column;height:100%;overflow:hidden;
 }
 
-/* ── main row (left panel + board) ── */
+/* ── main row ── */
 #main{
-  flex:1;min-height:0;
+  flex:0 0 auto;
   display:flex;flex-direction:row;
-  padding:4px;gap:4px;overflow:hidden;
+  padding:4px;gap:4px;
 }
 
 /* ── right panel ── */
 #right-panel{
   flex:1;min-width:120px;
-  align-self:flex-start;
   display:flex;flex-direction:column;
   gap:5px;overflow:hidden;
   padding:0 4px;
@@ -81,7 +80,7 @@ body{
   background:#1e2a45;border-radius:7px;
   padding:6px 8px;font-size:11px;line-height:1.5;
   flex-shrink:0;overflow-wrap:break-word;
-  margin-top:14px;
+  margin-top:auto;
 }
 #diagram-caption{font-size:10px;color:#99aacc;margin-bottom:2px}
 
