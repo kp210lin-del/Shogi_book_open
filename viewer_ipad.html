@@ -41,7 +41,7 @@ body{
 /* ── board row (2-col: board | right-panel) ── */
 #board-row{
   align-self:stretch;
-  display:flex;flex-direction:row;align-items:flex-start;
+  display:flex;flex-direction:row;align-items:stretch;
   padding:0 6px;gap:6px;
 }
 #right-panel{
@@ -49,12 +49,12 @@ body{
   display:flex;flex-direction:column;
   gap:8px;padding-top:2px;
 }
-#action-row{display:flex;gap:6px;flex-wrap:wrap;}
+#action-row{margin-top:auto;display:flex;gap:6px;flex-wrap:wrap;padding-bottom:4px;}
 .action-btn{flex:1;font-size:12px;padding:10px 4px;}
 
 /* ── board section ── */
 #board-section{
-  flex:0 0 auto;
+  flex:0 0 auto;align-self:flex-start;
   display:flex;flex-direction:column;align-items:flex-start;
 }
 .hand-row{
@@ -240,6 +240,7 @@ const JP_BASE={'玉':'K','飛':'R','角':'B','金':'G','銀':'S','桂':'N','香'
 
 let cur=0, initSfen="", curSfen="";
 let history=[], pickSrc=null, pendingMove=null;
+let arrowTargets={};
 
 /* ── SFEN utils ─────────────────────────── */
 function split(s){
@@ -343,6 +344,7 @@ function applyMove(fromUsi,toUsi,promote){
 
 /* ── Tap handlers ───────────────────────── */
 function onSq(usi){
+  if(boardMatchesInitial()&&arrowTargets[usi]){onChoice(arrowTargets[usi]);return;}
   const{board,turn}=split(curSfen);
   const grid=parseBoard(board);
   const[row,col]=rc(usi);const cell=grid[row][col];
@@ -443,6 +445,7 @@ function findMoveSource(mv,toFile,toRank,grid){
 }
 
 function drawArrows(){
+  arrowTargets={};
   const svg=document.getElementById('arrow-svg');
   svg.innerHTML='';
   if(!boardMatchesInitial())return;
@@ -469,6 +472,7 @@ function drawArrows(){
     const col=COLORS[c.label];if(!col)continue;
     const parsed=parseMoveJpToUsi(c.move);if(!parsed)continue;
     const[toFile,toRank]=parseUsi(parsed.to);
+    arrowTargets[parsed.to]=c.label;
     const to=getSqCenter(parsed.to);
     /* find source */
     let fromUsi=parsed.from;
