@@ -87,7 +87,7 @@ body{
   overflow-wrap:break-word;
 }
 .hidden{display:none!important}
-#correct-label{font-size:13px;font-weight:bold;color:#66ccff;margin-bottom:5px}
+#correct-label{font-size:15px;font-weight:bold;color:#66ccff;margin-bottom:5px}
 #action-row{display:flex;gap:4px;flex-shrink:0;}
 .action-btn{flex:1;font-size:13px;padding:11px 2px;}
 .info-box{
@@ -143,8 +143,8 @@ body{
   background:#c8a55a;
   user-select:none;-webkit-user-select:none;
 }
-.sq.selected{background:#ffe066}
 .sq.last-move{background:#e0c888}
+.sq.selected{background:#ffe066}
 .sq span{
   font-family:"Hiragino Mincho Pro","Yu Mincho","HG明朝E",serif;
   font-size:calc(var(--sq)*0.55);font-weight:bold;line-height:1;color:#111;
@@ -190,10 +190,6 @@ body{
     </div>
     <div class="hand-row bot" id="hand-sente"></div>
   </div>
-  <div id="answer-area" class="hidden">
-    <div id="correct-label"></div>
-    <div id="answer-text"></div>
-  </div>
   <div id="right-panel">
     <div id="nav-row">
       <button class="nav-btn" id="prev-btn">◀</button>
@@ -212,6 +208,10 @@ body{
       <div id="diagram-caption"></div>
       <div id="situation-text"></div>
     </div>
+  </div>
+  <div id="answer-area" class="hidden">
+    <div id="correct-label"></div>
+    <div id="answer-text"></div>
   </div>
 </div>
 
@@ -238,7 +238,7 @@ const JP_BASE={'玉':'K','飛':'R','角':'B','金':'G','銀':'S','桂':'N','香'
 
 let cur=0, initSfen="", curSfen="";
 let history=[], pickSrc=null, pendingMove=null;
-let arrowTargets={};
+let arrowTargets={}, lastMoveUsi=null, answered=false;
 
 /* ── SFEN utils ─────────────────────────── */
 function split(s){
@@ -337,7 +337,7 @@ function applyMove(fromUsi,toUsi,promote){
   grid[toR][toC]={sym:newSym};
   history.push({sfen:curSfen});
   curSfen=`${buildBoard(grid)} ${turn==="b"?"w":"b"} ${buildHand(hands)} ${move+1}`;
-  pickSrc=null;playPlaceSound();render();
+  lastMoveUsi=toUsi;pickSrc=null;playPlaceSound();render();
 }
 
 /* ── Tap handlers ───────────────────────── */
@@ -438,7 +438,7 @@ function parseMoveJpToUsi(mv){
 function getSqSize(){
   const el=document.querySelector('.sq');
   if(el){const w=el.getBoundingClientRect().width;if(w>0)return w;}
-  return Math.min(58,(window.innerWidth-20)/9);
+  return Math.min(64,(window.innerWidth-20)/9);
 }
 function getSqCenter(usi){
   const[file,rank]=parseUsi(usi);const sq=getSqSize();
@@ -642,6 +642,7 @@ function render(){
         span.textContent=KANJI[key]||key;
         sq.appendChild(span);
       }
+      if(lastMoveUsi===usi)sq.classList.add("last-move");
       if(pickSrc&&pickSrc.from===usi)sq.classList.add("selected");
       el.appendChild(sq);
     }
@@ -675,6 +676,8 @@ function renderHand(elId,hand,side){
 function load(idx){
   cur=idx;const p=PROBLEMS[cur];
   initSfen=p.sfen;curSfen=p.sfen;history=[];pickSrc=null;
+  pendingMove=null;answered=false;lastMoveUsi=null;
+  document.getElementById("promo-modal").classList.remove("active");
   document.getElementById("progress").textContent=`${cur+1} / ${PROBLEMS.length}`;
   document.getElementById("prob-select").value=String(cur);
   document.getElementById("diagram-caption").textContent=p.caption||"";
@@ -693,6 +696,7 @@ function load(idx){
 }
 
 function onChoice(label){
+  if(answered)return;answered=true;
   const p=PROBLEMS[cur],correct=p.correct;
   if(label===correct)playPingPon();
   document.querySelectorAll(".choice-btn").forEach(btn=>{
@@ -724,8 +728,8 @@ document.getElementById("promo-no").addEventListener("pointerup",(e)=>{
 /* ── Controls ───────────────────────────── */
 document.getElementById("prev-btn").addEventListener("pointerup",(e)=>{e.preventDefault();if(cur>0)load(cur-1);});
 document.getElementById("next-btn").addEventListener("pointerup",(e)=>{e.preventDefault();if(cur<PROBLEMS.length-1)load(cur+1);});
-document.getElementById("prob-btn").addEventListener("pointerup",(e)=>{e.preventDefault();curSfen=initSfen;history=[];pickSrc=null;render();});
-document.getElementById("undo-btn").addEventListener("pointerup",(e)=>{e.preventDefault();if(history.length){curSfen=history.pop().sfen;pickSrc=null;render();}});
+document.getElementById("prob-btn").addEventListener("pointerup",(e)=>{e.preventDefault();curSfen=initSfen;history=[];pickSrc=null;lastMoveUsi=null;render();});
+document.getElementById("undo-btn").addEventListener("pointerup",(e)=>{e.preventDefault();if(history.length){curSfen=history.pop().sfen;pickSrc=null;lastMoveUsi=null;render();}});
 document.getElementById("reveal-btn").addEventListener("pointerup",(e)=>{e.preventDefault();showAnswer();});
 
 /* ── Board interaction (event delegation) ── */
@@ -768,6 +772,8 @@ _bg.addEventListener('contextmenu',(e)=>e.preventDefault());
   });
   sel.addEventListener("change",()=>load(+sel.value));
 })();
+
+window.addEventListener('resize',()=>render());
 
 load(0);
 </script>
