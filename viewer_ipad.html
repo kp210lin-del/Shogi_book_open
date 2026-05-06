@@ -56,6 +56,12 @@ body{
   padding:5px 6px;border-radius:6px;
   background:#1e2a45;text-align:center;flex-shrink:0;
 }
+#prob-select{
+  width:100%;padding:7px 6px;border-radius:7px;
+  background:#1e2a45;border:1px solid #4466aa;color:#cce;
+  font-size:12px;cursor:pointer;flex-shrink:0;
+  appearance:none;-webkit-appearance:none;
+}
 #choices{display:flex;flex-direction:column;gap:5px;flex-shrink:0;}
 .choice-btn{
   width:100%;padding:8px 5px;border-radius:7px;
@@ -195,6 +201,7 @@ body{
       <button class="nav-btn" id="next-btn">▶</button>
     </div>
     <div id="turn-ind"></div>
+    <select id="prob-select"></select>
     <div id="choices"></div>
     <button id="reveal-btn">解答を表示</button>
     <div id="action-row">
@@ -669,6 +676,7 @@ function load(idx){
   cur=idx;const p=PROBLEMS[cur];
   initSfen=p.sfen;curSfen=p.sfen;history=[];pickSrc=null;
   document.getElementById("progress").textContent=`${cur+1} / ${PROBLEMS.length}`;
+  document.getElementById("prob-select").value=String(cur);
   document.getElementById("diagram-caption").textContent=p.caption||"";
   document.getElementById("situation-text").textContent=p.situation||"";
   const ch=document.getElementById("choices");ch.innerHTML="";
@@ -745,6 +753,18 @@ _bg.addEventListener('pointermove',(e)=>{
   if(_lpTimer&&(Math.abs(e.clientX-_lpX)+Math.abs(e.clientY-_lpY))>12){clearTimeout(_lpTimer);_lpTimer=null;}
 });
 _bg.addEventListener('contextmenu',(e)=>e.preventDefault());
+
+/* ── Init select ────────────────────────── */
+(()=>{
+  const sel=document.getElementById("prob-select");
+  PROBLEMS.forEach((p,i)=>{
+    const opt=document.createElement("option");
+    opt.value=String(i);
+    opt.textContent=`${i+1}. ${p.caption||p.chapter||"問題"+(i+1)}`;
+    sel.appendChild(opt);
+  });
+  sel.addEventListener("change",()=>load(+sel.value));
+})();
 
 load(0);
 </script>
