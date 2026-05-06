@@ -14,14 +14,16 @@ html,body{height:100%}
   --t-board:#c8a55a;--t-board-line:#8a7040;
   --t-hand-bg:#b8963c;--t-hand-border:#888;
   --t-piece-bg:#d4aa70;--t-piece-border:#999;
+  --t-piece-hi:#ecdda8;--t-piece-mid:#d0b870;--t-piece-dark:#a88840;
   --t-sente:#111;--t-gote:#991100;--t-promoted:#c82000;
   --t-sq-sel:#ffe066;--t-sq-last:#e0c888;
 }
 body[data-theme="wood"]{
   --t-body-bg:#110800;
-  --t-board:#c89040;--t-board-line:#5a3608;
+  --t-board:#c49040;--t-board-line:#583408;
   --t-hand-bg:#7a5012;--t-hand-border:#3c2008;
   --t-piece-bg:#f2e0a0;--t-piece-border:#7a5818;
+  --t-piece-hi:#faf4d8;--t-piece-mid:#e8d490;--t-piece-dark:#c4a040;
   --t-sente:#0c0400;--t-gote:#720000;--t-promoted:#9e0000;
   --t-sq-sel:#f0c030;--t-sq-last:#b89028;
 }
@@ -30,6 +32,7 @@ body[data-theme="lacquer"]{
   --t-board:#c8a050;--t-board-line:#2e1e0a;
   --t-hand-bg:#160e06;--t-hand-border:#2e1e0a;
   --t-piece-bg:#f8edd5;--t-piece-border:#806840;
+  --t-piece-hi:#fdf5e0;--t-piece-mid:#e8d898;--t-piece-dark:#c0a050;
   --t-sente:#080400;--t-gote:#6a0000;--t-promoted:#bb0000;
   --t-sq-sel:#ffe082;--t-sq-last:#d4a030;
 }
@@ -38,6 +41,7 @@ body[data-theme="water"]{
   --t-board:#bcd6ea;--t-board-line:#4070a0;
   --t-hand-bg:#142840;--t-hand-border:#2e6080;
   --t-piece-bg:#e4f2fc;--t-piece-border:#4898c0;
+  --t-piece-hi:#f0f8ff;--t-piece-mid:#c8dff0;--t-piece-dark:#90b8d8;
   --t-sente:#020e28;--t-gote:#500000;--t-promoted:#0030a0;
   --t-sq-sel:#68bef8;--t-sq-last:#84b0d8;
 }
@@ -46,6 +50,7 @@ body[data-theme="sakura"]{
   --t-board:#ead0d8;--t-board-line:#946070;
   --t-hand-bg:#3a162c;--t-hand-border:#8a5868;
   --t-piece-bg:#fce6f0;--t-piece-border:#ac6880;
+  --t-piece-hi:#fff0f6;--t-piece-mid:#f0d0e0;--t-piece-dark:#c898b0;
   --t-sente:#100018;--t-gote:#640018;--t-promoted:#b0003a;
   --t-sq-sel:#ffaace;--t-sq-last:#e088aa;
 }
@@ -54,8 +59,25 @@ body[data-theme="moon"]{
   --t-board:#d4d8e8;--t-board-line:#3e50a0;
   --t-hand-bg:#0a1030;--t-hand-border:#2c3c90;
   --t-piece-bg:#eceef8;--t-piece-border:#4858b8;
+  --t-piece-hi:#f4f6ff;--t-piece-mid:#d0d8f0;--t-piece-dark:#90a0d8;
   --t-sente:#020410;--t-gote:#300060;--t-promoted:#0820a8;
   --t-sq-sel:#a0beff;--t-sq-last:#7088e0;
+}
+/* ── Wood theme textures ── */
+body[data-theme="wood"]{
+  background-image:
+    repeating-linear-gradient(93deg,transparent 0,transparent 3px,rgba(60,20,0,.10) 3px,rgba(60,20,0,.10) 4px),
+    repeating-linear-gradient(90deg,transparent 0,transparent 22px,rgba(30,10,0,.06) 22px,rgba(30,10,0,.06) 28px);
+}
+body[data-theme="wood"] .sq{
+  background-image:
+    repeating-linear-gradient(92deg,transparent 0,transparent 65%,rgba(90,45,0,.05) 65%,rgba(90,45,0,.05) 100%),
+    linear-gradient(180deg,rgba(255,255,255,.07) 0%,transparent 55%,rgba(0,0,0,.06) 100%);
+}
+body[data-theme="wood"] .hand-row{
+  background-image:
+    repeating-linear-gradient(92deg,transparent 0,transparent 60%,rgba(60,25,0,.06) 60%,rgba(60,25,0,.06) 100%),
+    linear-gradient(180deg,rgba(255,255,255,.05) 0%,transparent 100%);
 }
 body{
   font-family:"Hiragino Kaku Gothic Pro","Hiragino Sans","Yu Gothic",sans-serif;
@@ -165,7 +187,11 @@ body{
 .hand-empty{font-size:11px;color:#654;padding:2px 4px}
 .hand-piece{
   width:calc(var(--sq)*0.75);height:calc(var(--sq)*0.75);
-  background:var(--t-piece-bg);border:1px solid var(--t-piece-border);
+  background:
+    radial-gradient(ellipse at 35% 28%,rgba(255,255,255,.5) 0%,transparent 52%),
+    linear-gradient(155deg,var(--t-piece-hi) 0%,var(--t-piece-mid) 50%,var(--t-piece-dark) 100%);
+  border:1px solid var(--t-piece-border);
+  box-shadow:0 2px 5px rgba(0,0,0,.45),inset 0 1px 2px rgba(255,255,255,.35);
   display:flex;align-items:center;justify-content:center;
   font-family:"Hiragino Mincho Pro","Yu Mincho","HG明朝E",serif;
   font-size:calc(var(--sq)*0.42);font-weight:bold;
@@ -197,8 +223,15 @@ body{
 .sq.last-move{background:var(--t-sq-last)}
 .sq.selected{background:var(--t-sq-sel)}
 .sq span{
+  display:flex;align-items:center;justify-content:center;
+  width:88%;height:88%;
+  clip-path:polygon(50% 0%,92% 22%,92% 100%,8% 100%,8% 22%);
+  background:
+    radial-gradient(ellipse at 35% 24%,rgba(255,255,255,.55) 0%,transparent 50%),
+    linear-gradient(158deg,var(--t-piece-hi) 0%,var(--t-piece-mid) 48%,var(--t-piece-dark) 100%);
+  filter:drop-shadow(0 2px 3px rgba(0,0,0,.55)) drop-shadow(0 1px 1px rgba(0,0,0,.3));
   font-family:"Hiragino Mincho Pro","Yu Mincho","HG明朝E",serif;
-  font-size:calc(var(--sq)*0.55);font-weight:bold;line-height:1;color:var(--t-sente);
+  font-size:calc(var(--sq)*0.50);font-weight:bold;line-height:1;color:var(--t-sente);
   pointer-events:none;
 }
 .sq span.gote{transform:rotate(180deg);color:var(--t-gote)}
