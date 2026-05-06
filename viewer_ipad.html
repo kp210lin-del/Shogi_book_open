@@ -63,22 +63,11 @@ body[data-theme="moon"]{
   --t-sente:#020410;--t-gote:#300060;--t-promoted:#0820a8;
   --t-sq-sel:#a0beff;--t-sq-last:#7088e0;
 }
-/* ── Wood theme textures ── */
-body[data-theme="wood"]{
-  background-image:
-    repeating-linear-gradient(93deg,transparent 0,transparent 3px,rgba(60,20,0,.10) 3px,rgba(60,20,0,.10) 4px),
-    repeating-linear-gradient(90deg,transparent 0,transparent 22px,rgba(30,10,0,.06) 22px,rgba(30,10,0,.06) 28px);
-}
-body[data-theme="wood"] .sq{
-  background-image:
-    repeating-linear-gradient(92deg,transparent 0,transparent 65%,rgba(90,45,0,.05) 65%,rgba(90,45,0,.05) 100%),
-    linear-gradient(180deg,rgba(255,255,255,.07) 0%,transparent 55%,rgba(0,0,0,.06) 100%);
-}
-body[data-theme="wood"] .hand-row{
-  background-image:
-    repeating-linear-gradient(92deg,transparent 0,transparent 60%,rgba(60,25,0,.06) 60%,rgba(60,25,0,.06) 100%),
-    linear-gradient(180deg,rgba(255,255,255,.05) 0%,transparent 100%);
-}
+/* ── Wood theme: Canvas texture shows through transparent cells ── */
+body[data-theme="wood"] .sq:not(.selected):not(.last-move){background:transparent;}
+body[data-theme="wood"] .sq.selected{background:rgba(240,190,44,.50);}
+body[data-theme="wood"] .sq.last-move{background:rgba(185,136,28,.38);}
+body[data-theme="wood"] #board-grid{background-size:100% 100%;background-repeat:no-repeat;}
 body{
   font-family:"Hiragino Kaku Gothic Pro","Hiragino Sans","Yu Gothic",sans-serif;
   background:var(--t-body-bg);color:#e8e8e8;
@@ -867,6 +856,80 @@ _bg.addEventListener('contextmenu',(e)=>e.preventDefault());
 
 window.addEventListener('resize',()=>render());
 
+/* ── Canvas wood texture ─────────────────── */
+function _wH(x,y){const n=Math.sin(x*127.1+y*311.7)*43758.5453;return n-Math.floor(n);}
+function _vN(x,y){
+  const ix=~~x,iy=~~y,fx=x-ix,fy=y-iy;
+  const ux=fx*fx*(3-2*fx),uy=fy*fy*(3-2*fy);
+  return _wH(ix,iy)*(1-ux)*(1-uy)+_wH(ix+1,iy)*ux*(1-uy)+
+         _wH(ix,iy+1)*(1-ux)*uy+_wH(ix+1,iy+1)*ux*uy;
+}
+function _fbm(x,y){let v=0,a=0.5,f=1;for(let i=0;i<4;i++){v+=_vN(x*f,y*f)*a;f*=2;a*=0.5;}return v;}
+function genWood(w,h,r0,r1,g0,g1,b0,b1,rings,warp){
+  try{
+    const cv=document.createElement('canvas');cv.width=w;cv.height=h;
+    const ctx=cv.getContext('2d'),d=ctx.createImageData(w,h);
+    for(let y=0;y<h;y++){for(let x=0;x<w;x++){
+      /* turbulence warp along grain direction */
+      const turbX=_fbm(x*0.008,y*0.03)*warp*60;
+      const turbY=_fbm(x*0.012+5.3,y*0.04+2.1)*warp*20;
+      const wx=(x+turbX)/w,wy=(y+turbY)/h;
+      /* ring pattern: distance from center + fine grain noise */
+      const cx2=(wx-0.5)*(wx-0.5)*2.8,cy2=(wy-0.5)*(wy-0.5)*0.4;
+      const dist=Math.sqrt(cx2+cy2)*rings;
+      const ring=Math.sin(dist*Math.PI*2+_fbm(x*0.015,y*0.06)*4.0)*0.5+0.5;
+      /* fine grain overlay */
+      const grain=_fbm(x*0.04,y*0.008)*0.22+_fbm(x*0.1,y*0.02)*0.10;
+      /* highlight near medullary rays */
+      const ray=Math.max(0,1-Math.abs(_vN(x*0.03,y*0.004)-0.5)*6)*0.18;
+      const t=Math.pow(ring*0.72+grain+ray,1.1);
+      const s=Math.max(0,Math.min(1,t));
+      const i4=(y*w+x)*4;
+      d.data[i4  ]=r0+s*(r1-r0)|0;
+      d.data[i4+1]=g0+s*(g1-g0)|0;
+      d.data[i4+2]=b0+s*(b1-b0)|0;
+      d.data[i4+3]=255;
+    }}
+    ctx.putImageData(d,0,0);
+    /* vignette overlay for depth */
+    const gv=ctx.createRadialGradient(w/2,h/2,0,w/2,h/2,Math.max(w,h)*0.7);
+    gv.addColorStop(0,'rgba(255,230,160,0.06)');
+    gv.addColorStop(1,'rgba(0,0,0,0.28)');
+    ctx.fillStyle=gv;ctx.fillRect(0,0,w,h);
+    return cv.toDataURL('image/jpeg',0.93);
+  }catch(e){return'';}
+}
+let _woodTex=null;
+function _applyWood(){
+  if(!_woodTex){
+    /* board: warm amber with dark walnut rings */
+    const board=genWood(576,576, 142,224, 82,155, 16,52, 22, 1.1);
+    /* hand rail: darker mahogany */
+    const hand =genWood(576,96,  98,172, 54,108, 10,36, 16, 0.9);
+    /* body background: very dark wenge */
+    const bg   =genWood(384,384, 20, 48,  8, 22,  2,  8,  9, 0.7);
+    _woodTex={board,hand,bg};
+  }
+  const boardEl=document.getElementById('board-grid');
+  if(_woodTex.board){
+    boardEl.style.backgroundImage=`url(${_woodTex.board})`;
+    boardEl.style.backgroundSize='100% 100%';
+  }
+  document.querySelectorAll('.hand-row').forEach(h=>{
+    if(_woodTex.hand){h.style.backgroundImage=`url(${_woodTex.hand})`;h.style.backgroundSize='100% 100%';}
+  });
+  if(_woodTex.bg){
+    document.body.style.backgroundImage=`url(${_woodTex.bg})`;
+    document.body.style.backgroundSize='cover';
+  }
+}
+function _clearWood(){
+  const boardEl=document.getElementById('board-grid');
+  boardEl.style.backgroundImage='';boardEl.style.backgroundSize='';
+  document.querySelectorAll('.hand-row').forEach(h=>{h.style.backgroundImage='';h.style.backgroundSize='';});
+  document.body.style.backgroundImage='';document.body.style.backgroundSize='';
+}
+
 /* ── Theme ──────────────────────────────── */
 (()=>{
   const sel=document.getElementById("theme-select");
@@ -874,10 +937,12 @@ window.addEventListener('resize',()=>render());
   try{saved=localStorage.getItem("shogiTheme")||"default";}catch(e){}
   sel.value=saved;
   document.body.dataset.theme=saved==="default"?"":saved;
+  if(saved==="wood")requestAnimationFrame(_applyWood);
   sel.addEventListener("change",()=>{
     const t=sel.value;
     document.body.dataset.theme=t==="default"?"":t;
     try{localStorage.setItem("shogiTheme",t);}catch(e){}
+    if(t==="wood"){requestAnimationFrame(_applyWood);}else{_clearWood();}
     render();
   });
 })();
