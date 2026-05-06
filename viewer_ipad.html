@@ -72,7 +72,6 @@ body{
 }
 .hidden{display:none!important}
 #correct-label{font-size:13px;font-weight:bold;color:#66ccff;margin-bottom:5px}
-#rp-spacer{flex:1;min-height:0}
 #action-row{display:flex;gap:4px;flex-shrink:0;}
 .action-btn{flex:1;font-size:11px;padding:7px 2px;}
 .info-box{
@@ -184,14 +183,13 @@ body{
     <div id="turn-ind"></div>
     <div id="choices"></div>
     <button id="reveal-btn">解答を表示</button>
-    <div id="rp-spacer"></div>
-    <div id="action-row">
-      <button class="ctrl-btn action-btn" id="prob-btn">問題図</button>
-      <button class="ctrl-btn action-btn" id="undo-btn">1手戻す</button>
-    </div>
     <div class="info-box">
       <div id="diagram-caption"></div>
       <div id="situation-text"></div>
+    </div>
+    <div id="action-row">
+      <button class="ctrl-btn action-btn" id="prob-btn">問題図</button>
+      <button class="ctrl-btn action-btn" id="undo-btn">1手戻す</button>
     </div>
   </div>
 </div>
