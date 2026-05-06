@@ -22,7 +22,6 @@ body{
   padding:6px 10px;background:#16213e;
   border-bottom:1px solid #2a3a60;flex-shrink:0;gap:8px;
 }
-#chapter-label{font-size:12px;color:#99aacc;white-space:nowrap}
 #progress{font-size:13px;color:#ccd;white-space:nowrap}
 .nav-btn,.ctrl-btn{
   background:#2a3a5a;border:1px solid #4460aa;color:#aaccff;
@@ -36,11 +35,36 @@ body{
 #main{
   flex:1;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;
   display:flex;flex-direction:column;align-items:center;
-  padding:8px 8px 24px;gap:8px;
+  padding:8px 0 24px;gap:8px;
+}
+
+/* ── board row (horizontal: spacer | board | buttons) ── */
+#board-row{
+  align-self:stretch;
+  display:flex;flex-direction:row;align-items:flex-start;
+}
+#left-spacer{flex:1;}
+#right-panel{
+  flex:0 0 auto;
+  display:flex;flex-direction:column;
+  gap:10px;padding:0 8px;
+  justify-content:center;
+  min-height:calc(9 * var(--sq));
+}
+.side-btn{
+  writing-mode:vertical-rl;
+  text-orientation:mixed;
+  padding:18px 9px;
+  font-size:13px;
+  font-weight:bold;
+  letter-spacing:0.08em;
+  white-space:nowrap;
+  min-height:72px;
 }
 
 /* ── board section ── */
 #board-section{
+  flex:0 0 auto;
   display:flex;flex-direction:column;align-items:flex-start;
 }
 .hand-row{
@@ -101,19 +125,19 @@ body{
 
 /* ── control row ── */
 #ctrl-row{
-  display:flex;align-items:center;gap:8px;
+  display:flex;align-items:center;justify-content:center;
   width:calc(9 * var(--sq));padding:4px 0;
 }
-#turn-ind{flex:1;font-size:14px;font-weight:bold}
+#turn-ind{font-size:14px;font-weight:bold}
 
 /* ── info / choices / answer ── */
 .info-box{
   background:#1e2a45;border-radius:8px;
   padding:12px 14px;font-size:14px;line-height:1.75;
-  width:100%;max-width:600px;
+  width:calc(100% - 16px);max-width:600px;
 }
 #diagram-caption{font-size:12px;color:#99aacc;margin-bottom:6px}
-#choices{display:flex;gap:10px;width:100%;max-width:600px}
+#choices{display:flex;gap:10px;width:calc(100% - 16px);max-width:600px}
 .choice-btn{
   flex:1;padding:14px 8px;border-radius:8px;
   border:2px solid #4460aa;background:#1e2a45;color:#e8e8e8;
@@ -125,7 +149,7 @@ body{
 .choice-btn.correct{border-color:#44bb88;background:#1a3a2a;color:#88ffcc}
 .choice-btn.wrong{border-color:#aa4444;background:#3a1a1a;color:#ffaaaa}
 #reveal-btn{
-  width:100%;max-width:600px;padding:14px;border-radius:8px;
+  width:calc(100% - 16px);max-width:600px;padding:14px;border-radius:8px;
   background:#2a3a60;border:1px solid #4466aa;color:#aaccff;
   font-size:15px;cursor:pointer;touch-action:manipulation;
 }
@@ -133,7 +157,7 @@ body{
 #answer-area{
   background:#1e2a45;border-radius:8px;
   padding:12px 14px;font-size:14px;line-height:1.75;
-  width:100%;max-width:600px;
+  width:calc(100% - 16px);max-width:600px;
 }
 .hidden{display:none!important}
 #correct-label{font-size:16px;font-weight:bold;color:#66ccff;margin-bottom:8px}
@@ -164,29 +188,36 @@ body{
 <body>
 
 <div id="topbar">
-  <span id="chapter-label"></span>
+  <div style="flex:1"></div>
   <div style="display:flex;align-items:center;gap:8px">
     <button class="nav-btn" id="prev-btn">◀</button>
     <span id="progress"></span>
     <button class="nav-btn" id="next-btn">▶</button>
   </div>
-  <button class="ctrl-btn" id="reset-btn">↺</button>
+  <div style="flex:1;display:flex;justify-content:flex-end">
+    <button class="ctrl-btn" id="reset-btn">↺</button>
+  </div>
 </div>
 
 <div id="main">
-  <div id="board-section">
-    <div class="hand-row top" id="hand-gote"></div>
-    <div id="board-wrap">
-      <div id="board-grid"></div>
-      <svg id="arrow-svg" width="0" height="0"></svg>
+  <div id="board-row">
+    <div id="left-spacer"></div>
+    <div id="board-section">
+      <div class="hand-row top" id="hand-gote"></div>
+      <div id="board-wrap">
+        <div id="board-grid"></div>
+        <svg id="arrow-svg" width="0" height="0"></svg>
+      </div>
+      <div class="hand-row bot" id="hand-sente"></div>
     </div>
-    <div class="hand-row bot" id="hand-sente"></div>
+    <div id="right-panel">
+      <button class="ctrl-btn side-btn" id="prob-btn">問題図</button>
+      <button class="ctrl-btn side-btn" id="undo-btn">1手戻す</button>
+    </div>
   </div>
 
   <div id="ctrl-row">
     <span id="turn-ind"></span>
-    <button class="ctrl-btn" id="prob-btn">問題図</button>
-    <button class="ctrl-btn" id="undo-btn">◀ 1手戻す</button>
   </div>
 
   <div class="info-box">
@@ -495,7 +526,6 @@ function renderHand(elId,hand,side){
 function load(idx){
   cur=idx;const p=PROBLEMS[cur];
   initSfen=p.sfen;curSfen=p.sfen;history=[];pickSrc=null;
-  document.getElementById("chapter-label").textContent=p.chapter;
   document.getElementById("progress").textContent=`${cur+1} / ${PROBLEMS.length}`;
   document.getElementById("diagram-caption").textContent=p.caption||"";
   document.getElementById("situation-text").textContent=p.situation||"";
