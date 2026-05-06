@@ -64,9 +64,10 @@ body{
 }
 #reveal-btn:active{background:#3a4a70}
 #answer-area{
-  background:#1e2a45;border-radius:7px;
-  padding:8px 9px;font-size:11px;line-height:1.6;
-  overflow-y:auto;max-height:200px;flex-shrink:0;
+  flex-shrink:0;
+  background:#1e2a45;border-top:1px solid #2a3a5a;
+  padding:8px 12px;font-size:11px;line-height:1.6;
+  overflow-y:auto;max-height:130px;
 }
 .hidden{display:none!important}
 #correct-label{font-size:13px;font-weight:bold;color:#66ccff;margin-bottom:5px}
@@ -182,10 +183,6 @@ body{
     <div id="turn-ind"></div>
     <div id="choices"></div>
     <button id="reveal-btn">解答を表示</button>
-    <div id="answer-area" class="hidden">
-      <div id="correct-label"></div>
-      <div id="answer-text"></div>
-    </div>
     <div id="rp-spacer"></div>
     <div id="action-row">
       <button class="ctrl-btn action-btn" id="prob-btn">問題図</button>
@@ -196,6 +193,11 @@ body{
       <div id="situation-text"></div>
     </div>
   </div>
+</div>
+
+<div id="answer-area" class="hidden">
+  <div id="correct-label"></div>
+  <div id="answer-text"></div>
 </div>
 
 <div id="promo-modal">
