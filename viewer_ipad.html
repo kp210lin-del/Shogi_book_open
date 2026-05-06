@@ -8,8 +8,8 @@
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 html,body{height:100%}
 :root{
-  --lw:130px;
-  --sq:min(58px,calc((100vw - var(--lw) - 22px) / 9));
+  --rw:130px;
+  --sq:min(58px,calc((100vw - var(--rw) - 22px) / 9));
 }
 body{
   font-family:"Hiragino Kaku Gothic Pro","Hiragino Sans","Yu Gothic",sans-serif;
@@ -24,9 +24,9 @@ body{
   padding:4px;gap:4px;overflow:hidden;
 }
 
-/* ── left panel ── */
-#left-panel{
-  width:var(--lw);flex-shrink:0;
+/* ── right panel ── */
+#right-panel{
+  width:var(--rw);flex-shrink:0;
   display:flex;flex-direction:column;
   gap:5px;overflow:hidden;min-height:0;
 }
@@ -70,7 +70,7 @@ body{
 }
 .hidden{display:none!important}
 #correct-label{font-size:13px;font-weight:bold;color:#66ccff;margin-bottom:5px}
-#lp-spacer{flex:1;min-height:0}
+#rp-spacer{flex:1;min-height:0}
 #action-row{display:flex;gap:4px;flex-shrink:0;}
 .action-btn{flex:1;font-size:11px;padding:7px 2px;}
 .info-box{
@@ -164,7 +164,15 @@ body{
 <body>
 
 <div id="main">
-  <div id="left-panel">
+  <div id="board-section">
+    <div class="hand-row top" id="hand-gote"></div>
+    <div id="board-wrap">
+      <div id="board-grid"></div>
+      <svg id="arrow-svg" width="0" height="0"></svg>
+    </div>
+    <div class="hand-row bot" id="hand-sente"></div>
+  </div>
+  <div id="right-panel">
     <div id="nav-row">
       <button class="nav-btn" id="prev-btn">◀</button>
       <span id="progress"></span>
@@ -178,7 +186,7 @@ body{
       <div id="correct-label"></div>
       <div id="answer-text"></div>
     </div>
-    <div id="lp-spacer"></div>
+    <div id="rp-spacer"></div>
     <div id="action-row">
       <button class="ctrl-btn action-btn" id="prob-btn">問題図</button>
       <button class="ctrl-btn action-btn" id="undo-btn">1手戻す</button>
@@ -187,14 +195,6 @@ body{
       <div id="diagram-caption"></div>
       <div id="situation-text"></div>
     </div>
-  </div>
-  <div id="board-section">
-    <div class="hand-row top" id="hand-gote"></div>
-    <div id="board-wrap">
-      <div id="board-grid"></div>
-      <svg id="arrow-svg" width="0" height="0"></svg>
-    </div>
-    <div class="hand-row bot" id="hand-sente"></div>
   </div>
 </div>
 
@@ -364,9 +364,16 @@ function onHand(side,p){
 }
 
 /* ── Audio ──────────────────────────────── */
+let _audioCtx=null;
+function _getCtx(){
+  if(!_audioCtx)try{_audioCtx=new(window.AudioContext||window.webkitAudioContext)();}catch(e){}
+  if(_audioCtx&&_audioCtx.state==='suspended')_audioCtx.resume();
+  return _audioCtx;
+}
+document.addEventListener('pointerdown',()=>{_getCtx();},{once:true,passive:true});
 function playPingPon(){
   try{
-    const ctx=new(window.AudioContext||window.webkitAudioContext)();
+    const ctx=_getCtx();if(!ctx)return;
     [[880,0,0.16],[660,0.22,0.16]].forEach(([freq,start,dur])=>{
       const o=ctx.createOscillator(),g=ctx.createGain();
       o.type='sine';o.frequency.value=freq;
