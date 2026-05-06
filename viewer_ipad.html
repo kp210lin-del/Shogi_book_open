@@ -739,7 +739,7 @@ _bg.addEventListener('pointerdown',(e)=>{
     const usi=usiFromPoint(_lpX,_lpY);
     if(usi&&boardMatchesInitial()&&arrowTargets[usi]){onChoice(arrowTargets[usi]);}
     else{showAnswer();}
-  },2000);
+  },800);
 });
 _bg.addEventListener('pointerup',(e)=>{
   e.preventDefault();
