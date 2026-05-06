@@ -38,34 +38,19 @@ body{
   padding:8px 0 24px;gap:8px;
 }
 
-/* ── board row (3-col: left-panel | board | right-panel) ── */
+/* ── board row (2-col: board | right-panel) ── */
 #board-row{
   align-self:stretch;
   display:flex;flex-direction:row;align-items:flex-start;
   padding:0 6px;gap:6px;
 }
-#left-panel{
-  flex:0 0 130px;
-  display:flex;flex-direction:column;gap:8px;
-  padding-top:2px;
-}
 #right-panel{
-  flex:0 0 auto;
+  flex:1;min-width:100px;
   display:flex;flex-direction:column;
-  gap:10px;padding:0 2px 0 4px;
-  justify-content:center;
-  min-height:calc(9 * var(--sq));
+  gap:8px;padding-top:2px;
 }
-.side-btn{
-  writing-mode:vertical-rl;
-  text-orientation:mixed;
-  padding:18px 9px;
-  font-size:13px;
-  font-weight:bold;
-  letter-spacing:0.08em;
-  white-space:nowrap;
-  min-height:72px;
-}
+#action-row{display:flex;gap:6px;flex-wrap:wrap;}
+.action-btn{flex:1;font-size:12px;padding:10px 4px;}
 
 /* ── board section ── */
 #board-section{
@@ -203,13 +188,6 @@ body{
 
 <div id="main">
   <div id="board-row">
-    <div id="left-panel">
-      <div id="turn-ind"></div>
-      <div class="info-box">
-        <div id="diagram-caption"></div>
-        <div id="situation-text"></div>
-      </div>
-    </div>
     <div id="board-section">
       <div class="hand-row top" id="hand-gote"></div>
       <div id="board-wrap">
@@ -219,8 +197,15 @@ body{
       <div class="hand-row bot" id="hand-sente"></div>
     </div>
     <div id="right-panel">
-      <button class="ctrl-btn side-btn" id="prob-btn">問題図</button>
-      <button class="ctrl-btn side-btn" id="undo-btn">1手戻す</button>
+      <div id="turn-ind"></div>
+      <div class="info-box">
+        <div id="diagram-caption"></div>
+        <div id="situation-text"></div>
+      </div>
+      <div id="action-row">
+        <button class="ctrl-btn action-btn" id="prob-btn">問題図</button>
+        <button class="ctrl-btn action-btn" id="undo-btn">1手戻す</button>
+      </div>
     </div>
   </div>
 
@@ -631,16 +616,22 @@ document.getElementById("prob-btn").addEventListener("pointerup",(e)=>{e.prevent
 document.getElementById("undo-btn").addEventListener("pointerup",(e)=>{e.preventDefault();if(history.length){curSfen=history.pop().sfen;pickSrc=null;render();}});
 document.getElementById("reveal-btn").addEventListener("pointerup",(e)=>{e.preventDefault();showAnswer();});
 
-/* ── Long-press on board (3s) → show answer ── */
-let _lpTimer=null,_lpX=0,_lpY=0;
+/* ── Long-press on board (2s) → show answer ── */
+let _lpTimer=null,_lpX=0,_lpY=0,_lpFired=false;
 document.getElementById('board-wrap').addEventListener('pointerdown',(e)=>{
-  _lpX=e.clientX;_lpY=e.clientY;
-  _lpTimer=setTimeout(()=>{_lpTimer=null;showAnswer();},3000);
+  _lpFired=false;_lpX=e.clientX;_lpY=e.clientY;
+  _lpTimer=setTimeout(()=>{
+    _lpTimer=null;_lpFired=true;
+    pickSrc=null;showAnswer();
+  },2000);
 });
-['pointerup','pointercancel'].forEach(ev=>{
-  document.getElementById('board-wrap').addEventListener(ev,()=>{
-    if(_lpTimer){clearTimeout(_lpTimer);_lpTimer=null;}
-  });
+/* capture phase — runs before .sq handlers; blocks sq tap after long-press */
+document.getElementById('board-wrap').addEventListener('pointerup',(e)=>{
+  if(_lpTimer){clearTimeout(_lpTimer);_lpTimer=null;}
+  if(_lpFired){_lpFired=false;e.stopPropagation();e.preventDefault();}
+},{capture:true});
+document.getElementById('board-wrap').addEventListener('pointercancel',()=>{
+  if(_lpTimer){clearTimeout(_lpTimer);_lpTimer=null;}_lpFired=false;
 });
 document.getElementById('board-wrap').addEventListener('pointermove',(e)=>{
   if(_lpTimer&&(Math.abs(e.clientX-_lpX)+Math.abs(e.clientY-_lpY))>12){
