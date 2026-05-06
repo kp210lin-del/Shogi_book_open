@@ -17,16 +17,18 @@ body{
   display:flex;flex-direction:column;height:100%;overflow:hidden;
 }
 
-/* ── main row ── */
+/* ── main grid ── */
 #main{
-  flex:0 0 auto;
-  display:flex;flex-direction:row;
+  display:grid;
+  grid-template-columns:calc(9 * var(--sq) + 4px) 1fr;
+  grid-template-rows:auto auto;
   padding:4px;gap:4px;
 }
 
 /* ── right panel ── */
 #right-panel{
-  flex:1;min-width:120px;
+  grid-column:2;grid-row:1;align-self:stretch;
+  min-width:120px;
   display:flex;flex-direction:column;
   gap:5px;overflow:hidden;
   padding:0 4px;
@@ -65,7 +67,7 @@ body{
 }
 #reveal-btn:active{background:#3a4a70}
 #answer-area{
-  margin-top:8px;
+  grid-column:1;grid-row:2;
   width:calc(9 * var(--sq) + 4px);
   background:#1e2a45;border-top:2px solid #4466aa;
   padding:10px 14px;font-size:12px;line-height:1.7;
@@ -84,13 +86,9 @@ body{
 }
 #diagram-caption{font-size:10px;color:#99aacc;margin-bottom:2px}
 
-/* ── board column ── */
-#board-col{
-  flex:0 0 auto;align-self:flex-start;
-  display:flex;flex-direction:column;
-}
+/* ── board section ── */
 #board-section{
-  flex:0 0 auto;
+  grid-column:1;grid-row:1;align-self:start;
   display:flex;flex-direction:column;align-items:flex-start;
 }
 .hand-row{
@@ -172,19 +170,17 @@ body{
 <body>
 
 <div id="main">
-  <div id="board-col">
-    <div id="board-section">
-      <div class="hand-row top" id="hand-gote"></div>
-      <div id="board-wrap">
-        <div id="board-grid"></div>
-        <svg id="arrow-svg" width="0" height="0"></svg>
-      </div>
-      <div class="hand-row bot" id="hand-sente"></div>
+  <div id="board-section">
+    <div class="hand-row top" id="hand-gote"></div>
+    <div id="board-wrap">
+      <div id="board-grid"></div>
+      <svg id="arrow-svg" width="0" height="0"></svg>
     </div>
-    <div id="answer-area" class="hidden">
-      <div id="correct-label"></div>
-      <div id="answer-text"></div>
-    </div>
+    <div class="hand-row bot" id="hand-sente"></div>
+  </div>
+  <div id="answer-area" class="hidden">
+    <div id="correct-label"></div>
+    <div id="answer-text"></div>
   </div>
   <div id="right-panel">
     <div id="nav-row">
