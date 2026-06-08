@@ -274,9 +274,10 @@ function loadSfenToBoard() {
   if (!raw) { editSfenErrorEl.textContent = "SFEN を入力してください"; return; }
   ensureEditBoard();
   try {
-    editBoard.setSFEN(raw);
+    const sfen = ShogiBoard.looksLikeBod(raw) ? ShogiBoard.bodToSfen(raw) : raw;
+    editBoard.setSFEN(sfen);
   } catch (e) {
-    editSfenErrorEl.textContent = "SFEN を解釈できません: " + e.message;
+    editSfenErrorEl.textContent = "局面を解釈できません（SFEN/BOD）: " + e.message;
     return;
   }
   editProblemSfen = editBoard.toSFEN();

@@ -19,11 +19,22 @@ python -m http.server 8088 --bind 127.0.0.1
 
 ブラウザで http://127.0.0.1:8088 を開く。
 
-## iPad で使う
+## iPad で使う（公開URL）
 
-PWA の Service Worker は HTTPS か localhost でしか動かないため、iPad でオフライン利用するには
-GitHub Pages などの静的 HTTPS ホスティングに置き、Safari で開いて「ホーム画面に追加」する。
-以後はオフラインで起動でき、毎日 1 問ずつ登録していける。
+GitHub Pages で公開済み：
+
+**https://kp210lin-del.github.io/Shogi_book_open/shogi-tango/**
+
+iPad の Safari でこのURLを開き、共有 → **「ホーム画面に追加」**。
+以後はアイコンからオフラインで起動でき（Service Worker がキャッシュ）、毎日 1 問ずつ登録していける。
+データは端末内に保存され、ときどき「⬇ 書き出し」で iCloud Drive / OneDrive にバックアップ。
+
+### 更新を反映するには（デプロイ手順）
+
+1. `projects/将棋単語帳/` を編集（フロント変更時は `index.html` の `?v=N` と `sw.js` の `CACHE` 名を上げる）
+2. ローカルクローン `C:\local_Doc\_gh_deploy\Shogi_book_open\shogi-tango\` に同じファイルをコピー
+3. `git -C C:\local_Doc\_gh_deploy\Shogi_book_open add -A && git ... commit && git push origin main`
+4. 1〜2分で Pages が再ビルド。iPad 側はアプリを開き直す（SW更新のため2回起動 or 再追加）
 
 ## 毎日の登録フロー
 

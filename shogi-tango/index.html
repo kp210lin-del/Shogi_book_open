@@ -10,8 +10,8 @@
   <link rel="apple-touch-icon" href="icons/icon-192.png" />
   <link rel="manifest" href="manifest.webmanifest" />
   <title>将棋「次の一手」単語帳</title>
-  <link rel="stylesheet" href="lib/shogi-board.css?v=4" />
-  <link rel="stylesheet" href="style.css?v=4" />
+  <link rel="stylesheet" href="lib/shogi-board.css?v=5" />
+  <link rel="stylesheet" href="style.css?v=5" />
 </head>
 <body>
   <header class="topbar">
@@ -63,8 +63,8 @@
   <!-- ============ 登録 / 編集 ============ -->
   <section id="view-edit" class="view">
     <label class="field">
-      <span>① SFEN を貼り付け（ぴよ将棋などの出力）</span>
-      <textarea id="edit-sfen" rows="2" placeholder="lnsgkgsnl/1r5b1/ppppppppp/9/9/9/PPPPPPPPP/1B5R1/LNSGKGSNL b - 1"></textarea>
+      <span>① SFEN または BOD を貼り付け（ぴよ将棋の「局面コピー」=BOD でOK）</span>
+      <textarea id="edit-sfen" rows="2" placeholder="SFEN か BOD（盤面図）を貼り付け → 「② 盤に反映」"></textarea>
     </label>
     <div class="row">
       <button id="edit-load-sfen" class="btn-primary">② 盤に反映</button>
@@ -126,7 +126,7 @@
     </div>
   </div>
 
-  <script src="lib/shogi-board.js?v=4"></script>
-  <script src="app.js?v=4"></script>
+  <script src="lib/shogi-board.js?v=5"></script>
+  <script src="app.js?v=5"></script>
 </body>
 </html>

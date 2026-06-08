@@ -91,6 +91,73 @@
     return `${rows.join("/")} ${turn} ${hand || "-"} 1`;
   }
 
+  // 漢数字 -> 数値（1〜18, 駒台の枚数用）
+  function kanjiNum(s) {
+    if (!s) return 1;
+    const d = { "〇": 0, "一": 1, "二": 2, "三": 3, "四": 4, "五": 5, "六": 6, "七": 7, "八": 8, "九": 9 };
+    if (s.indexOf("十") >= 0) {
+      const parts = s.split("十");
+      const l = parts[0], r = parts[1];
+      return (l ? d[l] : 1) * 10 + (r ? d[r] : 0);
+    }
+    return d[s] !== undefined ? d[s] : 1;
+  }
+
+  // BOD（KIF系の盤面図テキスト）-> SFEN。ぴよ将棋の「局面コピー」に対応。
+  function bodToSfen(text) {
+    const BOARD = {
+      "歩": "p", "香": "l", "桂": "n", "銀": "s", "金": "g", "角": "b", "飛": "r", "玉": "k", "王": "k",
+      "と": "+p", "杏": "+l", "圭": "+n", "全": "+s", "馬": "+b", "龍": "+r", "竜": "+r",
+    };
+    const HAND = { "歩": "p", "香": "l", "桂": "n", "銀": "s", "金": "g", "角": "b", "飛": "r" };
+    const board = new Array(81).fill(null);
+    const hands = { b: {}, w: {} };
+    let turn = "b";
+    let row = 0;
+    const lines = text.replace(/\r/g, "").split("\n");
+    for (const line of lines) {
+      if (line.indexOf("持駒") >= 0) {
+        const owner = (line.indexOf("先手") >= 0 || line.indexOf("下手") >= 0) ? "b" : "w";
+        const body = (line.split(/[：:]/)[1] || "");
+        if (body.indexOf("なし") >= 0) continue;
+        const entries = body.replace(/[ 　]+/g, " ").trim().split(" ");
+        for (const e of entries) {
+          if (!e) continue;
+          const letter = HAND[e[0]];
+          if (!letter) continue;
+          hands[owner][letter] = (hands[owner][letter] || 0) + kanjiNum(e.slice(1));
+        }
+        continue;
+      }
+      if (line.indexOf("手番") >= 0) {
+        turn = (line.indexOf("後手") >= 0 || line.indexOf("上手") >= 0) ? "w" : "b";
+        continue;
+      }
+      const i1 = line.indexOf("|");
+      if (i1 < 0) continue;
+      const i2 = line.indexOf("|", i1 + 1);
+      if (i2 < 0 || row > 8) continue;
+      const content = line.slice(i1 + 1, i2);
+      for (let c = 0; c < 9; c++) {
+        const pre = content[c * 2], ch = content[c * 2 + 1];
+        if (ch === undefined) break;
+        if (ch === "・" || ch === " " || ch === "　") continue;
+        const key = BOARD[ch];
+        if (!key) continue;
+        const owner = (pre === "v" || pre === "V") ? "w" : "b";
+        board[row * 9 + c] = { key, owner };
+      }
+      row++;
+    }
+    if (row !== 9) throw new Error("BODの盤が9段読めません（" + row + "段）");
+    return buildSFEN({ board, hands, turn });
+  }
+
+  // 入力が BOD 形式っぽいか
+  function looksLikeBod(text) {
+    return text.indexOf("|") >= 0 || text.indexOf("持駒") >= 0;
+  }
+
   // cellIndex(0..80) -> USI 升("7g" 等)
   function idxToUsi(idx) {
     const file = 9 - (idx % 9);
@@ -425,6 +492,8 @@
   ShogiBoard.START_SFEN = START_SFEN;
   ShogiBoard.parseSFEN = parseSFEN;
   ShogiBoard.buildSFEN = buildSFEN;
+  ShogiBoard.bodToSfen = bodToSfen;
+  ShogiBoard.looksLikeBod = looksLikeBod;
   ShogiBoard.idxToUsi = idxToUsi;
   ShogiBoard.usiToIdx = usiToIdx;
   global.ShogiBoard = ShogiBoard;
