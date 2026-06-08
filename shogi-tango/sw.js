@@ -1,5 +1,5 @@
 /* 将棋単語帳 Service Worker — アプリシェルを cache-first でオフライン化 */
-const CACHE = "shogi-tango-v5";
+const CACHE = "shogi-tango-v6";
 
 const PIECE_KEYS = ["p", "l", "n", "s", "g", "b", "r", "k", "+p", "+l", "+n", "+s", "+b", "+r"];
 const PIECE_ASSETS = [];

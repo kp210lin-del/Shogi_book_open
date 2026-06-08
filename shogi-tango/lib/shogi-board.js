@@ -441,10 +441,10 @@
       if (isDrop) {
         const circ = document.createElementNS(ns, "circle");
         circ.setAttribute("cx", tx); circ.setAttribute("cy", ty);
-        circ.setAttribute("r", 5.5);
+        circ.setAttribute("r", 3.4);
         circ.setAttribute("fill", "none");
         circ.setAttribute("stroke", color);
-        circ.setAttribute("stroke-width", 1.6);
+        circ.setAttribute("stroke-width", 1);
         this.arrowSvg.appendChild(circ);
         return;
       }
@@ -452,23 +452,30 @@
       const fromDisp = this._disp(usiToIdx(fromSq));
       const [fx, fy] = this._centerPct(fromDisp);
 
+      // 先端が升の中心あたりで止まるよう、線を少し手前で切る
+      const dx = tx - fx, dy = ty - fy;
+      const len = Math.hypot(dx, dy) || 1;
+      const ex = tx - (dx / len) * 2.5, ey = ty - (dy / len) * 2.5;
+
       const defs = document.createElementNS(ns, "defs");
       const marker = document.createElementNS(ns, "marker");
       marker.setAttribute("id", "sb-arrowhead");
-      marker.setAttribute("markerWidth", "5"); marker.setAttribute("markerHeight", "5");
-      marker.setAttribute("refX", "3"); marker.setAttribute("refY", "2.5");
+      marker.setAttribute("markerUnits", "userSpaceOnUse"); // 線幅に依存しない絶対サイズ
+      marker.setAttribute("markerWidth", "4"); marker.setAttribute("markerHeight", "4");
+      marker.setAttribute("refX", "3.4"); marker.setAttribute("refY", "2");
       marker.setAttribute("orient", "auto");
       const poly = document.createElementNS(ns, "polygon");
-      poly.setAttribute("points", "0 0, 5 2.5, 0 5");
+      poly.setAttribute("points", "0 0, 4 2, 0 4");
       poly.setAttribute("fill", color);
       marker.appendChild(poly); defs.appendChild(marker);
       this.arrowSvg.appendChild(defs);
 
       const line = document.createElementNS(ns, "line");
       line.setAttribute("x1", fx); line.setAttribute("y1", fy);
-      line.setAttribute("x2", tx); line.setAttribute("y2", ty);
+      line.setAttribute("x2", ex); line.setAttribute("y2", ey);
       line.setAttribute("stroke", color);
-      line.setAttribute("stroke-width", "2");
+      line.setAttribute("stroke-width", "1.1");
+      line.setAttribute("stroke-linecap", "round");
       line.setAttribute("marker-end", "url(#sb-arrowhead)");
       this.arrowSvg.appendChild(line);
     }
