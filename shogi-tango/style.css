@@ -1,0 +1,161 @@
+:root {
+  --bg: #161b24;
+  --panel: #1c2230;
+  --panel2: #232b3b;
+  --fg: #e8edf5;
+  --muted: #9aa6bb;
+  --accent: #5b8cff;
+  --accent2: #5fb98f;
+  --danger: #e06a6a;
+  --line: #313a4d;
+}
+* { box-sizing: border-box; }
+html, body {
+  margin: 0; padding: 0; height: 100%;
+  background: var(--bg); color: var(--fg);
+  font-family: -apple-system, BlinkMacSystemFont, "Hiragino Kaku Gothic ProN", "Yu Gothic", Meiryo, sans-serif;
+  -webkit-text-size-adjust: 100%;
+}
+body {
+  display: flex; flex-direction: column;
+  min-height: 100%;
+  min-height: 100svh;            /* iPad のツールバーを除いた実高に追従 */
+}
+
+/* ---------- 上部バー ---------- */
+.topbar {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 8px; padding: 8px 14px; background: var(--panel);
+  border-bottom: 1px solid var(--line);
+  padding-top: calc(8px + env(safe-area-inset-top));
+}
+.topbar h1 { font-size: 1.0rem; margin: 0; font-weight: 600; }
+.topbar-actions { display: flex; gap: 8px; }
+
+/* ---------- タブ ---------- */
+.tabs {
+  display: flex; gap: 6px; padding: 8px 12px; background: var(--panel);
+  border-bottom: 1px solid var(--line);
+  position: sticky; top: 0; z-index: 10;
+}
+.tab {
+  flex: 1; padding: 12px 6px; border: none; border-radius: 10px;
+  background: var(--panel2); color: var(--muted); font-size: 0.95rem; cursor: pointer;
+  min-height: 44px;
+}
+.tab.active { background: var(--accent); color: #fff; font-weight: 700; }
+
+/* ---------- ビュー（縦1カラム・中央寄せ） ---------- */
+.view { display: none; flex: 1; width: 100%; max-width: 860px; margin: 0 auto;
+  padding: 12px 14px calc(20px + env(safe-area-inset-bottom)); }
+.view.active { display: flex; flex-direction: column; }
+
+/* ---------- 盤 ---------- */
+/* iPad 縦向き: 横幅と高さの両方に収まるよう自動調整 */
+/* board-host と sb-root は同一要素に付くため --sb-size は board-host 側で上書き
+   （style.css は shogi-board.css より後に読むので勝つ） */
+.board-host { display: flex; justify-content: center; margin: 8px 0; --sb-size: min(94vw, 54vh); }
+/* 編集は SFEN入力・手順・コメント・保存も1画面に収めるため盤を小さめに */
+#view-edit .board-host { --sb-size: min(74vw, 31vh); margin: 2px 0; }
+#view-edit .field { margin: 5px 0; }
+#view-edit .row { margin: 5px 0; }
+#view-edit .answer-info { margin: 2px 0; line-height: 1.5; }
+#view-edit .answer-info .row { margin: 4px 0; }
+#view-edit textarea { padding: 8px; }
+.turn-label { text-align: center; font-size: 1.05rem; font-weight: 700; margin-bottom: 2px; }
+
+/* ---------- ボタン ---------- */
+.btn-primary, .btn-ghost {
+  border: 1px solid var(--line); border-radius: 10px; padding: 11px 16px;
+  font-size: 0.98rem; cursor: pointer; color: var(--fg); min-height: 44px;
+}
+.btn-primary { background: var(--accent); border-color: var(--accent); color: #fff; font-weight: 700; }
+.btn-primary:disabled { background: #3a4154; border-color: #3a4154; color: #8893a8; cursor: not-allowed; }
+.btn-ghost { background: var(--panel2); }
+.btn-ghost.danger { color: var(--danger); }
+.row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin: 8px 0; }
+.row.center { justify-content: center; }
+
+/* ---------- 出題 ---------- */
+.quiz-controls {
+  display: flex; gap: 12px; align-items: center; flex-wrap: wrap;
+  color: var(--muted); font-size: 0.95rem;
+}
+.quiz-controls select { background: var(--panel2); color: var(--fg); border: 1px solid var(--line); border-radius: 8px; padding: 8px; min-height: 40px; }
+.quiz-controls .chk { display: flex; align-items: center; gap: 6px; }
+.quiz-controls .chk input { width: 20px; height: 20px; }
+#quiz-progress { margin-left: auto; }
+
+#quiz-body { display: flex; flex-direction: column; }
+.quiz-buttons { display: flex; gap: 10px; justify-content: center; margin-top: 6px; }
+.quiz-buttons .btn-primary, .quiz-buttons .btn-ghost { flex: 1; }
+.message { text-align: center; min-height: 1.5em; font-size: 1.15rem; margin: 8px 0; }
+.message.ok { color: var(--accent2); font-weight: 700; }
+.message.ng { color: var(--danger); font-weight: 700; }
+.comment-box {
+  background: var(--panel); border: 1px solid var(--line); border-left: 4px solid var(--accent2);
+  border-radius: 10px; padding: 12px 14px; margin-top: 10px; white-space: pre-wrap; line-height: 1.6;
+}
+
+/* ---------- 登録 / 編集（縦フロー） ---------- */
+.field { display: flex; flex-direction: column; gap: 6px; margin: 8px 0; }
+.field > span { font-size: 0.9rem; color: var(--muted); }
+textarea, input[type="text"] {
+  background: var(--panel2); color: var(--fg); border: 1px solid var(--line);
+  border-radius: 10px; padding: 11px; font-size: 1rem; font-family: inherit; width: 100%;
+}
+textarea { resize: vertical; }
+.error-text { color: var(--danger); font-size: 0.9rem; }
+.answer-info { text-align: center; margin: 6px 0 4px; color: var(--muted); line-height: 1.7; }
+.moves-line { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; margin: 6px 0; }
+.moves-line .mv {
+  font-size: 0.86rem; border-radius: 6px; padding: 2px 8px; border: 1px solid var(--line);
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+.moves-line .mv.self { background: rgba(95, 185, 143, 0.16); color: #b8e6cf; }
+.moves-line .mv.opp { background: rgba(252, 183, 78, 0.16); color: #f3d199; }
+.answer-info code, code {
+  background: var(--panel2); border: 1px solid var(--line); border-radius: 6px;
+  padding: 2px 9px; font-size: 1rem; color: var(--accent2);
+}
+
+/* ---------- 一覧 ---------- */
+.card-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+.card-item {
+  background: var(--panel); border: 1px solid var(--line); border-radius: 12px;
+  padding: 14px; display: flex; justify-content: space-between; gap: 12px;
+}
+.card-main { display: flex; gap: 12px; min-width: 0; }
+.card-no { color: var(--muted); font-weight: 700; }
+.card-body { min-width: 0; }
+.card-answer { margin-bottom: 4px; }
+.card-comment { font-size: 0.95rem; margin-bottom: 4px; }
+.card-sfen { font-size: 0.74rem; color: var(--muted); word-break: break-all; }
+.card-actions { display: flex; flex-direction: column; gap: 8px; flex-shrink: 0; }
+.tag { background: var(--panel2); border: 1px solid var(--line); border-radius: 12px; padding: 2px 9px; font-size: 0.74rem; color: var(--muted); margin-left: 4px; }
+
+.muted { color: var(--muted); font-size: 0.88rem; }
+.empty-msg { text-align: center; color: var(--muted); padding: 48px 16px; line-height: 1.8; }
+
+/* ---------- モーダル ---------- */
+.modal {
+  position: fixed; inset: 0; background: rgba(0, 0, 0, 0.55);
+  display: flex; align-items: center; justify-content: center; z-index: 100;
+  padding: env(safe-area-inset-top) 16px env(safe-area-inset-bottom);
+}
+.modal-content {
+  background: var(--panel); border: 1px solid var(--line); border-radius: 14px;
+  padding: 24px 26px; text-align: center; max-width: 90vw;
+}
+.modal-content p { margin: 0 0 14px; font-size: 1.05rem; }
+.modal-content .btn-primary, .modal-content .btn-ghost { min-width: 96px; }
+
+/* ---------- ShogiBoard を暗背景に馴染ませる ---------- */
+.sb-hand { background: rgba(255, 255, 255, 0.04); border-color: var(--line); }
+.sb-hand-label { color: var(--muted); }
+.sb-hand-count { color: #2a1c10; }
+
+/* ---------- 横向き（ランドスケープ）では盤を高さ基準で少し大きく ---------- */
+@media (orientation: landscape) {
+  .board-host { --sb-size: min(60vw, 78vh); }
+}

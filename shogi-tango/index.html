@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#1c2230" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="将棋単語帳" />
+  <link rel="apple-touch-icon" href="icons/icon-192.png" />
+  <link rel="manifest" href="manifest.webmanifest" />
+  <title>将棋「次の一手」単語帳</title>
+  <link rel="stylesheet" href="lib/shogi-board.css?v=4" />
+  <link rel="stylesheet" href="style.css?v=4" />
+</head>
+<body>
+  <header class="topbar">
+    <h1>将棋「次の一手」単語帳</h1>
+    <div class="topbar-actions">
+      <button id="export-btn" class="btn-ghost" title="deck.json を書き出してバックアップ">⬇ 書き出し</button>
+      <label class="btn-ghost" title="deck.json を読み込み">⬆ 読み込み
+        <input id="import-input" type="file" accept="application/json,.json" hidden />
+      </label>
+    </div>
+  </header>
+
+  <nav class="tabs">
+    <button class="tab active" data-tab="quiz">📝 出題</button>
+    <button class="tab" data-tab="edit">➕ 登録 / 編集</button>
+    <button class="tab" data-tab="list">📚 一覧 (<span id="card-count">0</span>)</button>
+  </nav>
+
+  <!-- ============ 出題 ============ -->
+  <section id="view-quiz" class="view active">
+    <div class="quiz-controls">
+      <label>出題順
+        <select id="quiz-order">
+          <option value="sequential">順番</option>
+          <option value="random">ランダム</option>
+        </select>
+      </label>
+      <label class="chk"><input type="checkbox" id="quiz-wrong-only" /> 間違いだけ</label>
+      <span id="quiz-progress" class="muted"></span>
+    </div>
+
+    <div id="quiz-empty" class="empty-msg" style="display:none">
+      まだカードがありません。「➕ 登録 / 編集」から問題を追加してください。
+    </div>
+
+    <div id="quiz-body">
+      <div class="turn-label" id="quiz-turn"></div>
+      <div id="quiz-board" class="board-host"></div>
+      <div id="quiz-message" class="message"></div>
+      <div class="quiz-buttons">
+        <button id="quiz-retry-btn" class="btn-ghost">やり直す</button>
+        <button id="quiz-reveal-btn" class="btn-ghost">正解を見る</button>
+        <button id="quiz-next-btn" class="btn-primary">次の問題 →</button>
+      </div>
+      <div id="quiz-comment" class="comment-box" style="display:none"></div>
+    </div>
+  </section>
+
+  <!-- ============ 登録 / 編集 ============ -->
+  <section id="view-edit" class="view">
+    <label class="field">
+      <span>① SFEN を貼り付け（ぴよ将棋などの出力）</span>
+      <textarea id="edit-sfen" rows="2" placeholder="lnsgkgsnl/1r5b1/ppppppppp/9/9/9/PPPPPPPPP/1B5R1/LNSGKGSNL b - 1"></textarea>
+    </label>
+    <div class="row">
+      <button id="edit-load-sfen" class="btn-primary">② 盤に反映</button>
+      <button id="edit-flip" class="btn-ghost">盤を反転</button>
+      <span id="edit-sfen-error" class="error-text"></span>
+    </div>
+
+    <div class="turn-label" id="edit-turn"></div>
+    <div id="edit-board" class="board-host"></div>
+    <div class="answer-info">
+      <div>③ 盤上で<strong>手順</strong>を順に指す（自分の手→相手の手→…一直線でOK）</div>
+      <div id="edit-moves" class="moves-line">（まだ手がありません）</div>
+      <div class="row center"><button id="edit-undo" class="btn-ghost">↩ 1手戻す</button></div>
+    </div>
+
+    <label class="field">
+      <span>④ コメント / 解説</span>
+      <textarea id="edit-comment" rows="2" placeholder="この手を選ぶ理由・狙いなど"></textarea>
+    </label>
+    <label class="field">
+      <span>タグ（カンマ区切り・任意）</span>
+      <input id="edit-tags" type="text" placeholder="早石田, 中盤" />
+    </label>
+
+    <div class="row">
+      <button id="edit-save" class="btn-primary" disabled>保存</button>
+      <button id="edit-clear" class="btn-ghost">新規（クリア）</button>
+      <span id="edit-status" class="muted"></span>
+    </div>
+  </section>
+
+  <!-- ============ 一覧 ============ -->
+  <section id="view-list" class="view">
+    <div id="list-empty" class="empty-msg" style="display:none">カードはまだありません。</div>
+    <ul id="card-list" class="card-list"></ul>
+  </section>
+
+  <!-- 成りモーダル -->
+  <div id="promote-modal" class="modal" style="display:none">
+    <div class="modal-content">
+      <p>成りますか？</p>
+      <div class="row center">
+        <button id="promote-yes" class="btn-primary">成る</button>
+        <button id="promote-no" class="btn-ghost">成らない</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 読み込み（インポート）モーダル -->
+  <div id="import-modal" class="modal" style="display:none">
+    <div class="modal-content">
+      <p>読み込んだデータをどうしますか？</p>
+      <p class="muted" id="import-summary"></p>
+      <div class="row center">
+        <button id="import-merge" class="btn-primary">今のデータに追加</button>
+        <button id="import-replace" class="btn-ghost">全部置き換える</button>
+        <button id="import-cancel" class="btn-ghost">やめる</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="lib/shogi-board.js?v=4"></script>
+  <script src="app.js?v=4"></script>
+</body>
+</html>
